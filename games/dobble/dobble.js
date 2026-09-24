@@ -1,3 +1,4 @@
+import {applyTheme} from './theme-view.js';
 import {resolveConfiguration,settingsFromURL} from './config.js';
 import {validatePlayableSet} from '../../shared/content-rules.js';
 import {setupViewport} from './viewport.js';
@@ -41,7 +42,7 @@ async function initialize(){
   }
   async function apply(saved=true){
     const token=++loadToken;ready=false;session.clearPending();session.roundLocked=true;mounted?.destroy();$('game').replaceChildren();$('cue').hidden=true;$('newRound').disabled=true;$('loadError').hidden=true;
-    selected=sets.find(set=>set.id===settings.set)||sets[0];const configuration=resolveConfiguration(selected,settings);Object.assign(settings,configuration.settings);document.body.dataset.theme=settings.theme;$('setLabel').textContent=`${selected.name} · ${modeNames[settings.mode]}`;
+    selected=sets.find(set=>set.id===settings.set)||sets[0];const configuration=resolveConfiguration(selected,settings);Object.assign(settings,configuration.settings);applyTheme(settings.theme);$('setLabel').textContent=`${selected.name} · ${modeNames[settings.mode]}`;
     $('instruction').textContent=settings.count===1?'Look at the example, then find it on the card.':settings.count>2?'Find the one thing on every card. Tap it!':'One little thing connects these cards. Tap it!';
     $('status').textContent='Loading your set…';
     try{

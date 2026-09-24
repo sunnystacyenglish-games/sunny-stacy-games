@@ -1,10 +1,10 @@
-# Sunny & Stacy Games — Stage 2.3 / Pre-game settings
+# Sunny & Stacy Games — 2.4 / Approved themes
 
 Существующий HTML/CSS/JavaScript-проект: Hub → My Sets → Editor → Dobble. Без backend и внешних библиотек.
 
 ## Запуск
 
-1. Распакуйте sunny-stacy-games-stage-2.3.zip целиком.
+1. Распакуйте sunny-stacy-games-2.4-themes.zip целиком.
 2. Откройте терминал в папке sunny-stacy-games (рядом с package.json).
 3. С Node.js 18+ выполните: node serve.mjs
 4. Откройте http://127.0.0.1:4173. Оставьте терминал открытым; Ctrl+C останавливает сервер.
@@ -113,3 +113,19 @@ games/dobble/config.js используется и окном подготовк
 Проверка вручную: создайте 5 элементов → Save → My Sets → Play → выберите 4 карточки (доступно 2 элемента) → Word ↔ Image (3–4 карточки отключатся) → Slow → Play. Откройте Settings и убедитесь, что значения совпадают. Вернитесь в My Sets: настройки запомнены. У старого набора с менее чем 5 элементами Play отключён; Edit доступен.
 
 Автотесты: npm test. Браузерный сценарий: /tests/pregame.html → Run pre-game checks.
+
+## Global version & card composition (25 September 2026)
+
+Текущая версия проекта остаётся 2.3.0, как в package.json. Это единственный источник номера: shared/version.js экспортирует APP_VERSION, читая package.json; shared/app.js добавляет общую подпись страниц и диалогов. Для обновления номера меняйте только поле version в package.json. Будущим страницам достаточно подключить shared/styles.css и модуль shared/app.js с правильным относительным путём. Подпись не принимает клики; снизу зарезервированы 24 px с учётом safe area.
+
+layout.js теперь выбирает позиции из нескольких допустимых кандидатов по расстоянию и балансу покрытия, размещая крупные реальные footprint первыми. Фиксированная сетка удалена. Изображения имеют случайный угол от −40° до +40°, слова — от −20° до +20°. Размер и угол выбираются один раз при создании карточки; движение меняет только положение. Измеренные повёрнутые AABB используются и для размещения, и для прежней физики. При resize композиция пересчитывается с тем же seed под новые размеры; размерный коэффициент и угол сохраняются.
+
+Файлы этого обновления: shared/version.js и app.js (новые); shared/styles.css; index.html, sets/index.html, sets/editor.html, games/dobble/index.html; games/dobble/layout.js, render.js, viewport.js; serve.mjs, package.json; tests/composition.test.mjs и version.html (новые), tests/motion.test.mjs и flexible.js; README.md, TEST-REPORT.md. Physics, sound, sizing и engine не изменены. Cloud Sets не входит в это обновление.
+
+Проверка: npm test; /tests/flexible.html, /tests/version.html, /tests/viewport.html. Для визуальной проверки откройте набор с 40 концептами, выберите 10 элементов и Off, нажмите New cards несколько раз; затем Fast: положение меняется, угол остаётся прежним.
+
+## Themes 2.4
+
+Eight approved themes are available in pre-game and in-game Settings: Nature, Space, Candy, Ocean, Chalkboard, Board Game, Notebook, Magic School. Choice persists in the existing browser settings and game URL. Legacy playful/clean values map to Notebook; night maps to Space.
+
+Theme assets are bundled locally in shared/theme-assets; no external image services are required. Decoration is non-interactive and outside the card layout. Magic School retains the cauldron at bottom-left and the two candles at bottom-right. Space and Magic School have distinct card glows.

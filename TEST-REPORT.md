@@ -1,3 +1,15 @@
+# Version & composition — 25 сентября 2026
+
+PASS: все 7 Node-наборов, включая 648000 motion frames и 1080 новых композиций с реальными повёрнутыми размерами. Минимальное перемещение в motion regression — 0.254 диаметра карточки.
+PASS: flexible.html — 66 конфигураций, границы круга, пересечения, неизменность углов и scale в каждом из 45 кадров.
+PASS: version.html — Hub, My Sets, Editor, Dobble на 390/1280 px, индикатор в pre-game, единый номер из package.json и pointer-events:none.
+PASS: viewport.html — 10 размеров окна, 1/2 карточки и три режима, адаптация наборов 5–19, resize без сброса счёта и scale. На коротком landscape допустима вертикальная прокрутка.
+Console error/warn: отсутствуют в version и rendered checks. Визуально проверены 10 элементов на карточке и индикатор в pre-game. Алгоритмы motion, sound, engine и sizing побайтно совпадают с предыдущей сборкой.
+
+Ниже история предыдущих проверок.
+
+---
+
 # Pre-game settings — проверка 24 сентября 2026
 
 Все шесть Node-наборов PASS: 10078 logic checks, 648000 motion frames, content/storage errors, 20000 rotation rounds, 7743 adaptive rounds, новая матрица конфигурации и минимум 5. Маленькие размеры неизменны; крупные увеличены.
