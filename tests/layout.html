@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Responsive checks</title><h1>Responsive checks</h1><button id="run">Check layouts</button><pre id="result" role="status"></pre><div id="frames"></div><script type="module">
+import {setRepository,newId} from '../shared/sets.js';
+const output=document.querySelector('#result');
+document.querySelector('#run').onclick=async()=>{
+  document.querySelector('#run').disabled=true;output.textContent='';document.querySelector('#frames').replaceChildren();
+  const original=await setRepository.get('animals-1');const testSet=await setRepository.create({name:'__Responsive test',imageSource:'emoji',items:Array.from({length:40},(_,i)=>({...original.items[i%13],id:newId()}))});
+  try{for(const width of [390,768,1280])for(const page of ['../index.html','../sets/','../sets/editor.html','../sets/editor.html?id=animals-1','../games/dobble/?set='+testSet.id]){
+    const frame=document.createElement('iframe');frame.title=`${page} at ${width}`;frame.style.cssText=`display:block;width:${width}px;height:720px;border:0;margin:12px 0`;const loaded=new Promise(resolve=>frame.onload=resolve);frame.src=page;document.querySelector('#frames').append(frame);await loaded;
+    await new Promise(resolve=>setTimeout(resolve,150));const doc=frame.contentDocument;
+    const overflow=doc.documentElement.scrollWidth>width;
+    output.textContent+=`${overflow?'FAIL':'PASS'}: ${page} at ${frame.contentWindow.innerWidth}px, document width ${doc.documentElement.scrollWidth}px\n`;
+  }
+  }finally{await setRepository.delete(testSet.id);document.querySelector('#run').disabled=false;}
+};
+</script></html>
