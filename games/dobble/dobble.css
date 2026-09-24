@@ -35,3 +35,7 @@ body[data-theme=clean]{--bg:#f2f5f8;--panel:#fff;--card:#fff;--ink:#293745;--mut
 .dobble-page #loadError{margin:8px auto}
 @media(max-width:600px){.dobble-page header{padding:8px 12px;gap:8px}.dobble-page .tools{gap:6px}.dobble-page .tools a,.dobble-page .tools button{padding:7px 9px;font-size:12px}.dobble-page main{padding:0 10px 10px}.dobble-page #game{--columns:1;gap:12px}.dobble-page .heading h1{font-size:26px}}
 @media(max-height:480px) and (min-width:601px){.dobble-page header{padding:5px 2%;min-height:44px}.dobble-page .sun{width:28px;height:28px;font-size:20px}.dobble-page .tools button,.dobble-page .tools a{padding:6px 10px}.dobble-page .heading h1{font-size:23px;margin:1px 0}.dobble-page .heading p{display:none}.dobble-page .eyebrow{font-size:10px}.dobble-page .scorebar{margin:2px 0}.dobble-page #cue{margin:3px auto;padding:3px 10px}.dobble-page #cue .cue-content{font-size:20px}.dobble-page #cue img{width:28px;height:28px}.dobble-page #status{min-height:22px;font-size:12px}.dobble-page .actions button{padding:6px 12px}}
+
+@media(max-height:480px) and (min-width:601px){.dobble-page:has(#game[data-count="1"]) .heading h1{display:none}}
+
+.dobble-page .heading .eyebrow,.dobble-page #cue{overflow-wrap:anywhere}

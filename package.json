@@ -1,10 +1,10 @@
 {
   "name": "sunny-stacy-games",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node serve.mjs",
-    "test": "node tests/logic.test.mjs && node tests/motion.test.mjs && node tests/content.test.mjs && node tests/rotation.test.mjs && node tests/adaptive.test.mjs"
+    "test": "node tests/logic.test.mjs && node tests/motion.test.mjs && node tests/content.test.mjs && node tests/rotation.test.mjs && node tests/adaptive.test.mjs && node tests/config.test.mjs"
   }
 }

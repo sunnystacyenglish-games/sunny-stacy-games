@@ -1,3 +1,4 @@
+import {validatePlayableSet,validConceptCount,canPlaySet} from '../shared/content-rules.js';
 import {setRepository,newId,validateSet,inferImageSource} from '../shared/sets.js';
 import {showImage,readUpload} from '../shared/images.js';
 import {element,button,message,confirmDialog,chooseGame} from '../shared/ui.js';
@@ -5,7 +6,7 @@ let current={id:newId(),name:'',imageSource:'emoji',items:[]},savedId=null,dirty
 const $=id=>document.getElementById(id);
 const uploadVersions=new WeakMap();
 let activeItemId=null;
-async function assignImage(item,file){const attempt=(uploadVersions.get(item)||0)+1;uploadVersions.set(item,attempt);pendingUploads++;$('saveSet').disabled=true;try{const image=await readUpload(file);if(attempt===uploadVersions.get(item)&&current.items.includes(item)){item.image=image;const livePreview=[...$('items').children].find(row=>row.dataset.id===item.id)?.querySelector('.preview');if(livePreview){showImage(livePreview,image,item.word);livePreview.closest('.item-row').querySelector('.source-retained')?.remove();}message('Image added.');changed();}}catch(error){message(error.message,true);}finally{pendingUploads--;$('saveSet').disabled=pendingUploads>0;}}
+async function assignImage(item,file){const attempt=(uploadVersions.get(item)||0)+1;uploadVersions.set(item,attempt);pendingUploads++;$('saveSet').disabled=true;try{const image=await readUpload(file);if(attempt===uploadVersions.get(item)&&current.items.includes(item)){item.image=image;const livePreview=[...$('items').children].find(row=>row.dataset.id===item.id)?.querySelector('.preview');if(livePreview){showImage(livePreview,image,item.word);const row=livePreview.closest('.item-row');row.querySelector('.source-retained')?.remove();const sourceField=row.querySelector('.source-field input:not([type=file])');if(sourceField){sourceField.value='';row.querySelector('.source-field').append(element('p','help source-retained','Pasted image is used until you replace it.'));}}message('Image added.');changed();}}catch(error){message(error.message,true);}finally{pendingUploads--;$('saveSet').disabled=pendingUploads>0;}}
 function activate(id){activeItemId=id;for(const row of $('items').children)row.classList.toggle('is-active',row.dataset.id===id);}
 document.addEventListener('paste',event=>{
   if(document.querySelector('dialog[open]')||$('editorContent').hidden)return;
@@ -14,8 +15,8 @@ document.addEventListener('paste',event=>{
   const file=entry?.getAsFile();
   if(file&&item){event.preventDefault();assignImage(item,file);}
 });
-function changed(){revision++;dirty=true;$('saveState').textContent='Unsaved changes';$('playSet').hidden=true;warnings();}
-function warnings(){const words=current.items.map(item=>item.word.trim().toLowerCase()).filter(Boolean);$('duplicateWarning').textContent=new Set(words).size<words.length?'Some words repeat. They are separate concepts; consider using different words and pictures for a clear Dobble match.':'';}
+function changed(){revision++;dirty=true;$('saveState').textContent='Unsaved changes';$('playSet').disabled=true;warnings();}
+function warnings(){const valid=validConceptCount(current);$('minimumNote').textContent=`Minimum: 5 items · ${valid} valid`; $('playSet').hidden=false;$('playSet').disabled=dirty||!savedId||!canPlaySet(current);const words=current.items.map(item=>item.word.trim().toLowerCase()).filter(Boolean);$('duplicateWarning').textContent=new Set(words).size<words.length?'Some words repeat. They are separate concepts; consider using different words and pictures for a clear Dobble match.':'';}
 function field(label,input){const wrapper=element('label','',label);wrapper.append(input);return wrapper;}
 function draw(){
   $('items').replaceChildren();
@@ -52,7 +53,7 @@ $('setName').oninput=()=>{current.name=$('setName').value;changed();};
 $('editorForm').onsubmit=async event=>{
   event.preventDefault();if($('editorContent').hidden){$('continueEditor').click();return;}if(pendingUploads)return;
   $('saveSet').disabled=true;const savingRevision=revision;
-  try{validateSet(current);const saved=savedId?await setRepository.update(savedId,current):await setRepository.create(current);savedId=saved.id;if(revision!==savingRevision){message('Saved the earlier version. Your latest changes are still unsaved.');return;}current=saved;dirty=false;draw();history.replaceState(null,'',`editor.html?id=${encodeURIComponent(savedId)}`);$('editorTitle').textContent='Edit Set';$('saveState').textContent='Saved';$('playSet').hidden=false;message('Saved. Your set is ready in My Sets.');}
+  try{validatePlayableSet(current);const saved=savedId?await setRepository.update(savedId,current):await setRepository.create(current);savedId=saved.id;if(revision!==savingRevision){message('Saved the earlier version. Your latest changes are still unsaved.');return;}current=saved;dirty=false;draw();history.replaceState(null,'',`editor.html?id=${encodeURIComponent(savedId)}`);$('editorTitle').textContent='Edit Set';$('saveState').textContent='Saved';$('playSet').hidden=false;message('Saved. Your set is ready in My Sets.');}
   catch(error){message(error.message,true);}finally{$('saveSet').disabled=false;}
 };
 $('playSet').onclick=()=>chooseGame(current);

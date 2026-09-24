@@ -1,3 +1,5 @@
+import {resolveConfiguration,settingsFromURL} from './config.js';
+import {validatePlayableSet} from '../../shared/content-rules.js';
 import {setupViewport} from './viewport.js';
 import {setRepository} from '../../shared/sets.js';
 import {loadSettings} from '../../shared/storage.js';
@@ -7,7 +9,7 @@ import {playFeedback} from './sound.js';
 import {mountCards,renderRepresentation} from './render.js';
 import {setupSettings} from './settings.js';
 const $=id=>document.getElementById(id);
-const settings=loadSettings();let mounted=null;
+const settings=settingsFromURL(location.search,loadSettings());let mounted=null;
 setupViewport($('game'));
 const modeNames={images:'Images',words:'Words',mixed:'Word + Image'};
 async function initialize(){
@@ -39,16 +41,18 @@ async function initialize(){
   }
   async function apply(saved=true){
     const token=++loadToken;ready=false;session.clearPending();session.roundLocked=true;mounted?.destroy();$('game').replaceChildren();$('cue').hidden=true;$('newRound').disabled=true;$('loadError').hidden=true;
-    selected=sets.find(set=>set.id===settings.set)||sets[0];settings.per=Math.min(settings.per,maxItemsPerCard(selected.items.length,settings.count));document.body.dataset.theme=settings.theme;$('setLabel').textContent=`${selected.name} · ${modeNames[settings.mode]}`;
+    selected=sets.find(set=>set.id===settings.set)||sets[0];const configuration=resolveConfiguration(selected,settings);Object.assign(settings,configuration.settings);document.body.dataset.theme=settings.theme;$('setLabel').textContent=`${selected.name} · ${modeNames[settings.mode]}`;
     $('instruction').textContent=settings.count===1?'Look at the example, then find it on the card.':settings.count>2?'Find the one thing on every card. Tap it!':'One little thing connects these cards. Tap it!';
     $('status').textContent='Loading your set…';
     try{
+      validatePlayableSet(selected);
+      if(!configuration.playable)throw Error(configuration.note);
       const needed=requiredConcepts(settings);
       if(selected.items.length<needed)throw Error(`${settings.per} items per card with ${settings.count} card(s) needs at least ${needed} concepts. This set has ${selected.items.length}. Open Settings to choose fewer items/cards, or add more in My Sets.`);
       const prepared=await prepareItems(selected.items);if(token!==loadToken)return;
       if(loadedSetId!==selected.id||!pool){pool=new RotationPool(prepared);loadedSetId=selected.id;}
       sessionItems=prepared;ready=true;$('newRound').disabled=false;
-      const url=new URL(location.href);url.searchParams.set('set',selected.id);history.replaceState(null,'',url);
+      const url=new URL(location.href);url.searchParams.set('set',selected.id);for(const key of ['mode','count','per','movement','theme','sound','autoNext','delay'])url.searchParams.set(key,String(settings[key]));history.replaceState(null,'',url);
       session.start();if(!saved)$('status').textContent='Settings applied. This browser cannot save them.';
     }catch(error){if(token!==loadToken)return;$('status').textContent='';$('loadError').hidden=false;$('loadError').textContent=error.message;}
   }

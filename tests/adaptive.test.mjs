@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import {maxItemsPerCard,requiredConcepts,createRound,RotationPool} from '../games/dobble/engine.js';
+import {createLayout} from '../games/dobble/layout.js';
 import {itemScales,sizeProfile} from '../games/dobble/sizing.js';
 let seed=221;const random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);let rounds=0;
 for(const size of [1,2,3,5,6,7,9,13,19,40])for(const count of [1,2,3,4]){const max=maxItemsPerCard(size,count);assert.equal(max,Math.min(10,Math.floor((size-1)/count)+1));assert(requiredConcepts({count,per:max})<=size);const items=Array.from({length:size},(_,i)=>({id:String(i),word:'word'+i,image:'🐱'}));for(const mode of ['images','words','mixed']){if(mode==='mixed'&&count>2)continue;for(let per=1;per<=max;per++){const pool=new RotationPool(items,random);const targets=new Set();for(let i=0;i<size;i++){const round=createRound(items,{count,per,mode},null,random,pool);targets.add(round.answer);for(let a=0;a<count;a++){assert.equal(round.cards[a].length,per);for(let b=a+1;b<count;b++)assert.equal(round.cards[a].filter(x=>round.cards[b].some(y=>x.concept.id===y.concept.id)).length,1);}if(count===1)assert.notEqual(round.cue.representation,round.cards[0].find(x=>x.concept.id===round.answer).representation);rounds++;}assert.equal(targets.size,size);}}}
 for(let count=1;count<=10;count++)for(let i=0;i<500;i++){const scales=itemScales(count,random);if(count>1)assert(Math.max(...scales)-Math.min(...scales)>=.18-1e-9);for(const scale of scales){const profile=sizeProfile(count,scale);assert(profile.image>=.05&&profile.image<=.20);assert(profile.wordWidth>=.05&&profile.wordWidth<=.20);}}
+for(let count=2;count<=10;count++){const a=createLayout(count,random),b=createLayout(count,random);assert.notDeepEqual(a.map(x=>x.scale),b.map(x=>x.scale));assert.notDeepEqual(a.map(x=>x.scale),createLayout(count,random).map(x=>x.scale));}
 console.log('PASS: '+rounds+' adaptive rounds, small-set maxima, complete target cycles, opposite single-card cues and centered size limits.');
+
+for(let count=1;count<=10;count++){for(const scale of [.76,.85,.95,1]){const p=sizeProfile(count,scale);const base=count<=3?.175:count<=6?.16:count<=8?.145:.135;assert.equal(p.image,base*scale);assert.equal(p.font,(count<=4?.085:.065)*scale);assert.equal(p.wordWidth,Math.min(.20,.18*scale));}assert(sizeProfile(count,1.1).font>(count<=4?.085:.065)*1.1);}
+console.log('PASS: small sizes unchanged; only large sizes amplified.');
