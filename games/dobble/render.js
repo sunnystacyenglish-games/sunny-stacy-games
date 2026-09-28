@@ -28,7 +28,7 @@ export function mountCards(host,round,settings,onAnswer) {
     });
     let previousWidth=0;const placementSeed=Math.floor(Math.random()*4294967296);
     function size(){
-      const width=card.clientWidth;if(!width)return;
+      const width=card.clientWidth;if(!width||previousWidth===width)return;
       for(const {button,position,item,body} of entries){
         if(previousWidth&&previousWidth!==width){body.x=position.x;body.y=position.y;}
         const profile=sizeProfile(items.length,position.scale);const word=item.representation==='word';let font=width*(word?profile.font:profile.image/1.05);
@@ -54,7 +54,8 @@ export function mountCards(host,round,settings,onAnswer) {
       }
       if(previousWidth!==width){
         let seed=placementSeed;const random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
-        placeBodies(entries.map(entry=>entry.body),random);
+        const fit=placeBodies(entries.map(entry=>entry.body),random);
+        for(const {button} of entries){for(const property of ['width','height','fontSize'])button.style[property]=`${parseFloat(button.style[property])*fit}px`;button.dataset.fit=String(fit);}
         for(const {button,body,position} of entries){position.x=body.x;position.y=body.y;button.style.left=`${body.x*100}%`;button.style.top=`${body.y*100}%`;}
       }
       previousWidth=width;

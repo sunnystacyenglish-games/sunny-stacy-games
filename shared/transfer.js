@@ -3,7 +3,7 @@ const SCHEMA='sunny-stacy-content-set';
 function dataURL(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Could not export this image.'));reader.readAsDataURL(blob);});}
 export async function exportSet(set){
   const items=await Promise.all(set.items.map(async item=>({...item,image:item.image.type==='upload'?{type:'upload',data:await dataURL(item.image.blob)}:item.image})));
-  return JSON.stringify({schema:SCHEMA,version:1,set:{name:set.name,imageSource:set.imageSource,items}},null,2);
+  return JSON.stringify({schema:SCHEMA,version:1,set:{id:set.id,name:set.name,imageSource:set.imageSource,items}},null,2);
 }
 export function parseImport(text){
   if(text.length>40*1024*1024)throw Error('This JSON file is too large (maximum 40 MB).');
@@ -19,12 +19,18 @@ export function parseImport(text){
     }
     return {id:item?.id,word:item?.word,image};
   });
-  return validateSet({id:'import-validation',name:parsed.set.name,imageSource:parsed.set.imageSource,items});
+  const sourceId=parsed.set.id;
+  if(sourceId!==undefined&&(typeof sourceId!=='string'||!/^[A-Za-z0-9_-]{1,120}$/.test(sourceId)))throw Error('Invalid set ID in JSON.');
+  return validateSet({id:sourceId||'import-validation',sourceId,name:parsed.set.name,imageSource:parsed.set.imageSource,items});
 }
-export async function importSet(text){
+export async function importSet(text,{requestedId}={}){
   const data=parseImport(text);
   for(const item of data.items)if(item.image.type==='upload'){
     const bitmap=await createImageBitmap(item.image.blob).catch(()=>{throw Error(`Image for “${item.word}” is damaged.`);});bitmap.close();
+  }
+  if(requestedId!==undefined&&data.sourceId){
+    if(data.sourceId===requestedId)return setRepository.importMissing(data,requestedId);
+    if(!await setRepository.get(data.sourceId))return setRepository.importMissing(data,data.sourceId);
   }
   return setRepository.create({...data,items:data.items.map(item=>({...item,id:newId()}))});
 }

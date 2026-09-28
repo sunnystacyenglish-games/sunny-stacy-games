@@ -17,6 +17,7 @@ export const setRepository={
   },
   async get(id){const demo=builtins.find(set=>set.id===id);if(demo)return structuredClone(demo);const set=await transact('readonly',store=>store.get(id));return set?validateSet(set):null;},
   async create(data){const set=cleanSet(data,newId());await transact('readwrite',store=>store.add(set));return set;},
+  async importMissing(data,id){if(!/^[A-Za-z0-9_-]{1,120}$/.test(id)||builtins.some(set=>set.id===id))throw Error('Invalid or reserved set ID.');const set=cleanSet(data,id);await transact('readwrite',store=>store.add(set));return set;},
   async update(id,data){if(builtins.some(set=>set.id===id))throw Error('Make a copy to edit this built-in set.');if(!await this.get(id))throw Error('This set no longer exists. Save a new copy.');const set=cleanSet(data,id);await transact('readwrite',store=>store.put(set));return set;},
   async duplicate(id){const source=await this.get(id);if(!source)throw Error('Set not found.');return this.create({...source,name:`${source.name.slice(0,110)} — Copy`,items:source.items.map(item=>({...item,id:newId()}))});},
   async delete(id){if(builtins.some(set=>set.id===id))throw Error('Built-in sets cannot be deleted.');await transact('readwrite',store=>store.delete(id));}

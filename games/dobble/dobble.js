@@ -1,23 +1,38 @@
 import {applyTheme} from './theme-view.js';
-import {resolveConfiguration,settingsFromURL} from './config.js';
+import {resolveConfiguration,settingsFromURL,gameURL} from './config.js';
 import {validatePlayableSet} from '../../shared/content-rules.js';
 import {setupViewport} from './viewport.js';
 import {setRepository} from '../../shared/sets.js';
 import {loadSettings} from '../../shared/storage.js';
-import {createRound,GameSession,RotationPool,requiredConcepts,maxItemsPerCard} from './engine.js';
+import {createRound,GameSession,RotationPool,requiredConcepts} from './engine.js';
 import {prepareItems} from '../../shared/images.js';
 import {playFeedback} from './sound.js';
 import {mountCards,renderRepresentation} from './render.js';
 import {setupSettings} from './settings.js';
+import {resolveSetReference} from './resolution.js';
+import {importSet} from '../../shared/transfer.js';
+import {chooseGame} from '../../shared/ui.js';
 const $=id=>document.getElementById(id);
 const settings=settingsFromURL(location.search,loadSettings());let mounted=null;
 setupViewport($('game'));
 const modeNames={images:'Images',words:'Words',mixed:'Word + Image'};
 async function initialize(){
   const sets=await setRepository.list();
-  const requested=new URLSearchParams(location.search).get('set');
-  const requestedSet=sets.find(set=>set.id===requested);
-  let selected=requestedSet || sets.find(set=>set.id===settings.set) || sets[0];settings.set=selected.id;
+  const params=new URLSearchParams(location.search);let requested=params.has('set')?params.get('set'):undefined;
+  let selected=resolveSetReference(sets,requested,settings.set);if(selected)settings.set=selected.id;else settings.set=requested;
+  let setupDialog=null,imported=null;
+  function canonical(set,config=settings){history.replaceState(null,'',gameURL(set,config));}
+  function showMissing(){ready=false;$('missingSet').hidden=false;$('launchPanel').hidden=true;$('newRound').disabled=true;$('game').replaceChildren();$('setLabel').textContent='Requested set unavailable';$('status').textContent='';document.body.dataset.playing='false';}
+  function setup(){if(!selected){showMissing();return;}$('setLabel').textContent=selected.name+' · '+modeNames[settings.mode];if(setupDialog?.open)return;setupDialog=chooseGame(selected,{sets,settings,onSelect:(set,config)=>{selected=set;requested=set.id;Object.assign(settings,config);canonical(set);},onPlay:(set,config)=>{selected=set;requested=set.id;Object.assign(settings,config);apply();}});}
+  function replaceSet(set){selected=set;requested=set.id;settings.set=set.id;$('missingSet').hidden=true;$('launchPanel').hidden=false;canonical(set);setup();}
+  function refreshSetOptions(){const select=document.querySelector('#setSelect');select.replaceChildren();for(const set of sets){const option=document.createElement('option');option.value=set.id;option.textContent=set.name;select.append(option);}}
+  $('importMissing').onclick=$('importAnother').onclick=()=>{$('missingFile').click();};
+  $('missingFile').onchange=async()=>{const file=$('missingFile').files[0];$('missingFile').value='';if(!file)return;$('importNotice').textContent='Importing…';try{if(file.size>40*1024*1024)throw Error('Maximum JSON file size is 40 MB.');imported=await importSet(await file.text(),{requestedId:requested});sets.push(imported);refreshSetOptions();if(imported.id===requested){$('differentImport').hidden=true;replaceSet(imported);}else{$('importNotice').textContent='The imported set is different from the set requested by this link.';$('differentImport').hidden=false;}}catch(error){$('importNotice').textContent=error.message;}};
+  $('useImported').onclick=()=>{if(imported)replaceSet(imported);};
+  $('chooseMissing').onclick=()=>{const picker=$('replacementSet');picker.replaceChildren();const blank=document.createElement('option');blank.value='';blank.textContent='Choose a set';picker.append(blank);for(const set of sets){const option=document.createElement('option');option.value=set.id;option.textContent=set.name;picker.append(option);}$('replacementPicker').hidden=false;};
+  $('useReplacement').onclick=()=>{const set=sets.find(set=>set.id===$('replacementSet').value);if(set)replaceSet(set);};
+  $('startSetup').onclick=setup;
+  $('copyLink').onclick=async()=>{if(!selected)return;const url=gameURL(selected,settings);try{await navigator.clipboard.writeText(url);$('status').textContent='Game link copied. On another device, import this set’s JSON first.';}catch{$('status').textContent='Copy this game link: '+url;}};
   let sessionItems=[],pool=null,loadedSetId=null,ready=false,loadToken=0;
   const session=new GameSession({nextRound:previous=>createRound(sessionItems,settings,previous,Math.random,pool),onChange:handleChange});
   function handleChange(event){
@@ -42,27 +57,28 @@ async function initialize(){
   }
   async function apply(saved=true){
     const token=++loadToken;ready=false;session.clearPending();session.roundLocked=true;mounted?.destroy();$('game').replaceChildren();$('cue').hidden=true;$('newRound').disabled=true;$('loadError').hidden=true;
-    selected=sets.find(set=>set.id===settings.set)||sets[0];const configuration=resolveConfiguration(selected,settings);Object.assign(settings,configuration.settings);applyTheme(settings.theme);$('setLabel').textContent=`${selected.name} · ${modeNames[settings.mode]}`;
+    selected=sets.find(set=>set.id===settings.set);if(!selected){showMissing();return;}const configuration=resolveConfiguration(selected,settings);Object.assign(settings,configuration.settings);applyTheme(settings.theme);$('setLabel').textContent=`${selected.name} · ${modeNames[settings.mode]}`;
     $('instruction').textContent=settings.count===1?'Look at the example, then find it on the card.':settings.count>2?'Find the one thing on every card. Tap it!':'One little thing connects these cards. Tap it!';
     $('status').textContent='Loading your set…';
     try{
       validatePlayableSet(selected);
       if(!configuration.playable)throw Error(configuration.note);
       const needed=requiredConcepts(settings);
-      if(selected.items.length<needed)throw Error(`${settings.per} items per card with ${settings.count} card(s) needs at least ${needed} concepts. This set has ${selected.items.length}. Open Settings to choose fewer items/cards, or add more in My Sets.`);
+      if(selected.items.length<needed)throw Error(`${settings.per} items per card with ${settings.count} card(s) needs at least ${needed} concepts. This set has ${selected.items.length}. Choose fewer cards, or add more concepts in My Sets.`);
       const prepared=await prepareItems(selected.items);if(token!==loadToken)return;
       if(loadedSetId!==selected.id||!pool){pool=new RotationPool(prepared);loadedSetId=selected.id;}
       sessionItems=prepared;ready=true;$('newRound').disabled=false;
-      const url=new URL(location.href);url.searchParams.set('set',selected.id);for(const key of ['mode','count','per','movement','theme','sound','autoNext','delay'])url.searchParams.set(key,String(settings[key]));history.replaceState(null,'',url);
+      canonical(selected);document.body.dataset.playing='true';$('startSetup').hidden=true;$('missingSet').hidden=true;
       session.start();if(!saved)$('status').textContent='Settings applied. This browser cannot save them.';
     }catch(error){if(token!==loadToken)return;$('status').textContent='';$('loadError').hidden=false;$('loadError').textContent=error.message;}
   }
   const dialog=setupSettings(settings,sets,apply,()=>session.clearPending());
+  const openSettings=$('settingsOpen').onclick;$('settingsOpen').onclick=()=>{if(!ready)setup();else openSettings();};
   dialog.addEventListener('close',()=>{if(ready&&session.roundLocked && settings.autoNext)session.start();});
   $('newRound').onclick=()=>{if(ready)session.start();};$('resetScore').onclick=()=>session.resetScore();
   $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error('unsupported');}catch{$('status').textContent='Fullscreen is unavailable here. You can enlarge the browser window.';}};
   document.addEventListener('fullscreenchange',()=>{$('fullscreen').querySelector('span').textContent=document.fullscreenElement?'Exit fullscreen':'Fullscreen';});
-  await apply();if(requested&&!requestedSet)$('status').textContent='That set was not found. Using an available set.';
+  applyTheme(settings.theme);if(selected)setup();else showMissing();
   if(setRepository.warnings.length){$('loadError').hidden=false;$('loadError').textContent=setRepository.warnings.join(' ');}
 }
 initialize().catch(error=>{$('status').textContent=`Could not start the game: ${error.message}`;console.error(error);});

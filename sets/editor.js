@@ -1,4 +1,4 @@
-import {validatePlayableSet,validConceptCount,canPlaySet} from '../shared/content-rules.js';
+import {validatePlayableSet,validConceptCount,canPlaySet,isWord,isEmoji} from '../shared/content-rules.js';
 import {setRepository,newId,validateSet,inferImageSource} from '../shared/sets.js';
 import {showImage,readUpload} from '../shared/images.js';
 import {element,button,message,confirmDialog,chooseGame} from '../shared/ui.js';
@@ -16,7 +16,7 @@ document.addEventListener('paste',event=>{
   if(file&&item){event.preventDefault();assignImage(item,file);}
 });
 function changed(){revision++;dirty=true;$('saveState').textContent='Unsaved changes';$('playSet').disabled=true;warnings();}
-function warnings(){const valid=validConceptCount(current);$('minimumNote').textContent=`Minimum: 5 items · ${valid} valid`; $('playSet').hidden=false;$('playSet').disabled=dirty||!savedId||!canPlaySet(current);const words=current.items.map(item=>item.word.trim().toLowerCase()).filter(Boolean);$('duplicateWarning').textContent=new Set(words).size<words.length?'Some words repeat. They are separate concepts; consider using different words and pictures for a clear Dobble match.':'';}
+function warnings(){for(const row of $('items').children){const item=current.items.find(item=>item.id===row.dataset.id);if(!item)continue;for(const [input,invalid,text] of [[row.querySelector('input[aria-label^="Word "]'),!isWord(item.word),'Enter a word'],[row.querySelector('input[aria-label^="Emoji "]'),item.image.type==='emoji'&&!isEmoji(item.image.value),'Enter an emoji']]){if(!input)continue;input.setAttribute('aria-invalid',String(invalid));let error=input.parentElement.querySelector('.field-error');if(!error){error=element('span','field-error');error.id='error-'+item.id+'-'+text.replaceAll(' ','-');error.setAttribute('role','status');input.parentElement.append(error);input.setAttribute('aria-describedby',error.id);}error.textContent=invalid?text:'';}}const valid=validConceptCount(current);$('minimumNote').textContent=`Minimum: 5 items · ${valid} valid`; $('playSet').hidden=false;$('playSet').disabled=dirty||!savedId||!canPlaySet(current);const words=current.items.map(item=>item.word.trim().toLowerCase()).filter(Boolean);$('duplicateWarning').textContent=new Set(words).size<words.length?'Some words repeat. They are separate concepts; consider using different words and pictures for a clear Dobble match.':'';}
 function field(label,input){const wrapper=element('label','',label);wrapper.append(input);return wrapper;}
 function draw(){
   $('items').replaceChildren();

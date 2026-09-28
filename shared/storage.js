@@ -12,4 +12,4 @@ export function normalizeSettings(raw={}) {
   return result;
 }
 export function loadSettings() {try{return normalizeSettings(JSON.parse(localStorage.getItem(KEY)));}catch{return {...defaults};}}
-export function saveSettings(settings) {try{localStorage.setItem(KEY,JSON.stringify(settings));return true;}catch{return false;}}
+export function saveSettings(settings) {try{localStorage.setItem(KEY,JSON.stringify(Object.fromEntries(Object.entries(settings).filter(([key])=>key!=='per'&&key!=='items'))));return true;}catch{return false;}}
