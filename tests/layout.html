@@ -10,6 +10,7 @@ document.querySelector('#run').onclick=async()=>{
     const overflow=doc.documentElement.scrollWidth>width;
     output.textContent+=`${overflow?'FAIL':'PASS'}: ${page} at ${frame.contentWindow.innerWidth}px, document width ${doc.documentElement.scrollWidth}px\n`;
   }
+  output.textContent+=output.textContent.includes('FAIL:')?'LAYOUT CHECKS FAILED':'ALL LAYOUT CHECKS PASSED';
   }finally{await setRepository.delete(testSet.id);document.querySelector('#run').disabled=false;}
 };
 </script></html>

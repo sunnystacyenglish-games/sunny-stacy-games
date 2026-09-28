@@ -1,0 +1,2 @@
+// Editable public copy and verified social URLs. Empty URLs are not links.
+export const siteContent={intro:'ESL games for kids, made by Sunny & Stacy.',about:'We’re Sunny & Stacy, ESL teachers creating playful ways for children to practise English. Bring your own vocabulary and make these games part of your lesson.',socials:[{name:'Telegram',url:''},{name:'YouTube',url:''},{name:'Instagram',url:''},{name:'VK',url:''}]};
