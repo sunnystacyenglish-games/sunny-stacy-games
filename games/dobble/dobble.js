@@ -72,9 +72,9 @@ async function initialize(){
       session.start();if(!saved)$('status').textContent='Settings applied. This browser cannot save them.';
     }catch(error){if(token!==loadToken)return;$('status').textContent='';$('loadError').hidden=false;$('loadError').textContent=error.message;}
   }
-  const dialog=setupSettings(settings,sets,apply,()=>session.clearPending());
+  const dialog=setupSettings(settings,sets,(saved,restart)=>{if(restart)apply(saved);else{applyTheme(settings.theme);canonical(selected);}},()=>session.clearPending());
   const openSettings=$('settingsOpen').onclick;$('settingsOpen').onclick=()=>{if(!ready)setup();else openSettings();};
-  dialog.addEventListener('close',()=>{if(ready&&session.roundLocked && settings.autoNext)session.start();});
+  dialog.addEventListener('close',()=>{if(ready&&session.roundLocked&&settings.autoNext&&session.timer===null)session.timer=session.schedule(()=>{session.timer=null;session.start();},settings.delay);});
   $('newRound').onclick=()=>{if(ready)session.start();};$('resetScore').onclick=()=>session.resetScore();
   $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error('unsupported');}catch{$('status').textContent='Fullscreen is unavailable here. You can enlarge the browser window.';}};
   document.addEventListener('fullscreenchange',()=>{$('fullscreen').querySelector('span').textContent=document.fullscreenElement?'Exit fullscreen':'Fullscreen';});

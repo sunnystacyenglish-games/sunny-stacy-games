@@ -3,3 +3,18 @@
 @media(max-width:600px){.ttt-page main{padding:8px 24px 12px}.players{gap:8px}.player{padding:8px;gap:6px}.player-marker{font-size:26px;min-width:28px}.player input{font-size:16px}.player-fields{font-size:10px}.task-content{flex-direction:column;gap:10px}#taskImage{flex:none;font-size:110px}#taskImage img{max-height:23dvh;max-width:240px}#taskText{text-align:center;font-size:26px}.ttt-page dialog{padding:18px}.teacher-actions button{font-size:17px;padding:10px}.setup-names{gap:10px}.game-title span{display:block;margin:3px 0}}
 @media(max-height:500px){.ttt-page main{padding-top:4px}.game-title{margin-bottom:4px}.players{max-width:600px}.player{padding:3px 10px}.player input{font-size:15px}.player-marker{font-size:26px}#turn{margin:4px 0;font-size:14px;min-height:18px}.hint{display:none}#result{margin-top:8px}#result h2{font-size:18px;margin:4px}#result button,#result a{padding:8px 16px}.ttt-page #task{padding:14px;}.task-content{padding:8px 2px;gap:18px}#taskImage{font-size:100px}#taskImage img{max-height:35dvh}#taskText{font-size:25px}.teacher-actions{padding-top:8px}.teacher-actions button{min-height:46px}}
 @media(prefers-reduced-motion:reduce){.ttt-page *, .ttt-page *::before,.ttt-page *::after{animation:none!important;transition:none!important}#winLine line{stroke-dashoffset:0}}
+
+/* Concealment keeps the original geometry, including on reveal. */
+#task .concealed-answer{filter:blur(22px);user-select:none;-webkit-user-select:none;pointer-events:none}
+#task #taskText.concealed-answer{filter:blur(14px)}
+#taskImage,#taskText{user-select:none;-webkit-user-select:none}
+
+/* Stable container across task, steal and answer reveal. */
+.ttt-page #task{position:fixed;inset:auto;margin:0;transform:translate(-50%,-50%);height:min(440px,calc(100dvh - 24px))}
+.ttt-page #task .task-content{flex:1}
+.ttt-page #result{margin:auto;text-align:center}
+.victory-confetti{position:fixed;inset:0;pointer-events:none;z-index:10000;overflow:hidden}
+.victory-confetti i{position:absolute;top:-24px;left:var(--x);width:9px;height:15px;background:var(--color);animation:confetti-fall 1400ms var(--delay) ease-in both}
+@keyframes confetti-fall{to{transform:translate(var(--drift),110vh) rotate(650deg);opacity:0}}
+@media(max-width:600px) and (min-height:501px){.ttt-page #task{height:min(520px,calc(100dvh - 24px))}}
+@media(prefers-reduced-motion:reduce){.victory-confetti{display:none}}
