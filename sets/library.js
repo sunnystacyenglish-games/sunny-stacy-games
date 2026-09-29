@@ -12,7 +12,8 @@ async function refresh(){
     card.append(preview,element('h3','',set.name),element('p','meta',`${set.items.length} items${set.builtin?' · Built-in':''}`));
     const actions=element('div','row');const edit=element('a','button',set.builtin?'Edit a copy':'Edit');edit.href=`editor.html?id=${encodeURIComponent(set.id)}`;
     const play=button('Play',()=>chooseGame(set),'primary');play.disabled=!canPlaySet(set);if(play.disabled)card.append(element('p','minimum-note','Minimum: 5 valid items. Edit this set to add more.'));
-    actions.append(edit,play,button('Duplicate',()=>run(async()=>{await setRepository.duplicate(set.id);await refresh();message('Copy created.');})),button('Export JSON',()=>run(async()=>{
+    const tic=element('a','button','Tic-Tac-Toe');if(canPlaySet(set))tic.href='../games/tic-tac-toe/?set='+encodeURIComponent(set.id);else{tic.setAttribute('aria-disabled','true');tic.style.opacity='.5';}
+    actions.append(edit,play,tic,button('Duplicate',()=>run(async()=>{await setRepository.duplicate(set.id);await refresh();message('Copy created.');})),button('Export JSON',()=>run(async()=>{
       const json=await exportSet(set);const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));const link=element('a');link.href=url;link.download=`${set.name.replace(/[^a-zA-Z0-9_-]/g,'_')}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message('JSON exported, including uploaded images.');
     })));
     if(!set.builtin)actions.append(button('Delete',()=>run(async()=>{if(await confirmDialog(`Delete “${set.name}”?`,'This cannot be undone. Export a backup first if you want to keep a copy.')){await setRepository.delete(set.id);await refresh();message('Set deleted.');}}),'danger'));

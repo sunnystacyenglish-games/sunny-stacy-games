@@ -1,0 +1,5 @@
+import {THEME_IDS,normalizeTheme} from '../../shared/themes.js';
+const KEY='sunny-stacy.tictactoe.settings.v1';
+export function loadPreferences(){let raw={};try{raw=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{}const params=new URLSearchParams(location.search),theme=normalizeTheme(params.get('theme')||raw.theme);return {set:typeof raw.set==='string'?raw.set:'animals-1',theme:THEME_IDS.includes(theme)?theme:'notebook',sound:params.has('sound')?!['false','off'].includes(params.get('sound')):raw.sound!==false,X:typeof raw.X==='string'?raw.X.slice(0,60):'',O:typeof raw.O==='string'?raw.O.slice(0,60):''};}
+export function savePreferences(settings){try{localStorage.setItem(KEY,JSON.stringify(settings));return true;}catch{return false;}}
+export function gameURL(settings){const url=new URL('./',import.meta.url);url.search=new URLSearchParams({set:settings.set,theme:settings.theme,sound:String(settings.sound)});return url.href;}
