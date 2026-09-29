@@ -5,3 +5,5 @@ html{scroll-behavior:smooth}.hub{--accent:#a74730}.hub header{max-width:1240px;p
 @media(min-width:701px){.hero{padding:32px 0 40px}.hero h1{font-size:clamp(54px,6vw,76px);margin:14px 0}.hero p{margin:14px 0 20px}.hero-note{margin-block:10px}}
 
 .released-game{grid-template-columns:1fr}.game-copy{padding:28px}.ttt-preview{display:grid;grid-template:repeat(3,64px)/repeat(3,64px);place-content:center;gap:0;font-size:48px;background:#f4dfcf}.ttt-preview span{display:grid;place-items:center;color:var(--accent)}.ttt-preview span:not(:nth-child(3n)){border-right:2px solid #a7473070}.ttt-preview span:nth-child(-n+6){border-bottom:2px solid #a7473070}.soon-list{grid-template-columns:repeat(3,1fr)}@media(max-width:600px){.soon-list{grid-template-columns:1fr 1fr}}
+
+.wordly-preview{background:#dfeadb;gap:14px;text-align:center}.wordly-preview>span{font-size:80px}.wordly-preview b{display:inline-grid;place-items:center;width:48px;height:52px;background:#318451;color:white;border-radius:7px;margin:3px;font-size:28px}

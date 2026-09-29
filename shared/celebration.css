@@ -1,0 +1,1 @@
+.victory-confetti{position:fixed;inset:0;pointer-events:none;z-index:10000;overflow:hidden}.victory-confetti i{position:absolute;top:0;left:0;background:var(--color);will-change:transform}@media(prefers-reduced-motion:reduce){.victory-confetti{display:none}}

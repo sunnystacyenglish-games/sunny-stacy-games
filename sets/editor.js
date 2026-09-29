@@ -1,7 +1,8 @@
+import {chooseSetGame} from '../shared/game-chooser.js';
 import {validatePlayableSet,validConceptCount,canPlaySet,isWord,isEmoji} from '../shared/content-rules.js';
 import {setRepository,newId,validateSet,inferImageSource} from '../shared/sets.js';
 import {showImage,readUpload} from '../shared/images.js';
-import {element,button,message,confirmDialog,chooseGame} from '../shared/ui.js';
+import {element,button,message,confirmDialog} from '../shared/ui.js';
 let current={id:newId(),name:'',imageSource:'emoji',items:[]},savedId=null,dirty=false,pendingUploads=0,revision=0;
 const $=id=>document.getElementById(id);
 const uploadVersions=new WeakMap();
@@ -56,7 +57,7 @@ $('editorForm').onsubmit=async event=>{
   try{validatePlayableSet(current);const saved=savedId?await setRepository.update(savedId,current):await setRepository.create(current);savedId=saved.id;if(revision!==savingRevision){message('Saved the earlier version. Your latest changes are still unsaved.');return;}current=saved;dirty=false;draw();history.replaceState(null,'',`editor.html?id=${encodeURIComponent(savedId)}`);$('editorTitle').textContent='Edit Set';$('saveState').textContent='Saved';$('playSet').hidden=false;message('Saved. Your set is ready in My Sets.');}
   catch(error){message(error.message,true);}finally{$('saveSet').disabled=false;}
 };
-$('playSet').onclick=()=>chooseGame(current);
+$('playSet').onclick=()=>chooseSetGame(current);
 addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
 document.addEventListener('click',async event=>{const link=event.target.closest('a[href]');if(!link||!dirty||event.ctrlKey||event.metaKey)return;event.preventDefault();if(await confirmDialog('Leave without saving?','Your latest changes have not been saved.','Leave')){dirty=false;location.href=link.href;}});
 async function initialize(){

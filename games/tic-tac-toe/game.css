@@ -10,11 +10,15 @@
 #taskImage,#taskText{user-select:none;-webkit-user-select:none}
 
 /* Stable container across task, steal and answer reveal. */
-.ttt-page #task{position:fixed;inset:auto;margin:0;transform:translate(-50%,-50%);height:min(440px,calc(100dvh - 24px))}
+.ttt-page #task{position:fixed;inset:auto;margin:0;transform:translate(-50%,-50%);height:min(500px,calc(100dvh - 24px))}
 .ttt-page #task .task-content{flex:1}
 .ttt-page #result{margin:auto;text-align:center}
 .victory-confetti{position:fixed;inset:0;pointer-events:none;z-index:10000;overflow:hidden}
-.victory-confetti i{position:absolute;top:-24px;left:var(--x);width:9px;height:15px;background:var(--color);animation:confetti-fall 1400ms var(--delay) ease-in both}
-@keyframes confetti-fall{to{transform:translate(var(--drift),110vh) rotate(650deg);opacity:0}}
+.victory-confetti i{position:absolute;top:0;left:0;background:var(--color);will-change:transform}
+
 @media(max-width:600px) and (min-height:501px){.ttt-page #task{height:min(520px,calc(100dvh - 24px))}}
 @media(prefers-reduced-motion:reduce){.victory-confetti{display:none}}
+
+#reveal{flex:none;align-self:center;min-height:42px;padding:8px 24px}
+
+@media(min-width:601px) and (min-height:501px){#taskImage img{max-height:min(28dvh,240px)}}
