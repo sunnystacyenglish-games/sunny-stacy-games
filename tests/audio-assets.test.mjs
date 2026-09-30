@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+let tick;const players=[];
+globalThis.setInterval=fn=>(tick=fn,1);globalThis.clearInterval=()=>{tick=null;};
+globalThis.Audio=class{constructor(src){this.src=src;this.currentTime=0;this.volume=1;this.plays=0;this.paused=true;players.push(this);}play(){this.plays++;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}};
+const audio=await import('../shared/audio.js');
+for(const action of ['playClick','playCorrect','playWrong','playTileClack','playDiceRoll','playVictory'])audio[action](false);
+assert.equal(players.length,0);
+audio.playVictory();const victory=players.at(-1);victory.currentTime=2.99;tick();assert.equal(victory.volume,1);
+victory.currentTime=3.6;tick();assert(Math.abs(victory.volume-.5)<.001);
+victory.currentTime=4.21;tick();assert(victory.paused);assert.equal(victory.currentTime,0);assert.equal(victory.volume,1);
+audio.playVictory();assert.equal(victory.plays,2);assert.equal(victory.currentTime,0);assert.equal(victory.volume,1);audio.stopVictory();assert(victory.paused);assert.equal(tick,null);
+audio.playTileClack();audio.playTileClack();const clack=players.at(-1);assert.equal(players.length,2);assert.equal(clack.plays,2);assert.equal(clack.volume,1);
+audio.stopAllAudio();assert(players.every(p=>p.paused));
+for(const name of ['ui-click','tile-clack','wrong-soft-buzz','victory','correct-chime','dice-roll'])assert(fs.statSync(new URL('../assets/audio/'+name+'.mp3',import.meta.url)).size>100);
+console.log('PASS source-volume playback, silent disabled effects, single clack channel, victory 3s hold + 1.2s fade, stop/reset/restart, six bundled assets');

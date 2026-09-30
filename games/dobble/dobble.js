@@ -23,7 +23,7 @@ async function initialize(){
   let setupDialog=null,imported=null;
   function canonical(set,config=settings){history.replaceState(null,'',gameURL(set,config));}
   function showMissing(){ready=false;$('missingSet').hidden=false;$('launchPanel').hidden=true;$('newRound').disabled=true;$('game').replaceChildren();$('setLabel').textContent='Requested set unavailable';$('status').textContent='';document.body.dataset.playing='false';}
-  function setup(){if(!selected){showMissing();return;}$('setLabel').textContent=selected.name+' · '+modeNames[settings.mode];if(setupDialog?.open)return;setupDialog=chooseGame(selected,{sets,settings,onSelect:(set,config)=>{selected=set;requested=set.id;Object.assign(settings,config);canonical(set);},onPlay:(set,config)=>{selected=set;requested=set.id;Object.assign(settings,config);apply();}});}
+  function setup(){if(!selected){showMissing();return;}$('setLabel').textContent=selected.name;if(setupDialog?.open)return;setupDialog=chooseGame(selected,{sets,settings,onSelect:(set,config)=>{selected=set;requested=set.id;Object.assign(settings,config);canonical(set);},onPlay:(set,config)=>{selected=set;requested=set.id;Object.assign(settings,config);apply();}});}
   function replaceSet(set){selected=set;requested=set.id;settings.set=set.id;$('missingSet').hidden=true;$('launchPanel').hidden=false;canonical(set);setup();}
   function refreshSetOptions(){const select=document.querySelector('#setSelect');select.replaceChildren();for(const set of sets){const option=document.createElement('option');option.value=set.id;option.textContent=set.name;select.append(option);}}
   $('importMissing').onclick=$('importAnother').onclick=()=>{$('missingFile').click();};
@@ -57,7 +57,7 @@ async function initialize(){
   }
   async function apply(saved=true){
     const token=++loadToken;ready=false;session.clearPending();session.roundLocked=true;mounted?.destroy();$('game').replaceChildren();$('cue').hidden=true;$('newRound').disabled=true;$('loadError').hidden=true;
-    selected=sets.find(set=>set.id===settings.set);if(!selected){showMissing();return;}const configuration=resolveConfiguration(selected,settings);Object.assign(settings,configuration.settings);applyTheme(settings.theme);$('setLabel').textContent=`${selected.name} · ${modeNames[settings.mode]}`;
+    selected=sets.find(set=>set.id===settings.set);if(!selected){showMissing();return;}const configuration=resolveConfiguration(selected,settings);Object.assign(settings,configuration.settings);applyTheme(settings.theme);$('setLabel').textContent=selected.name;
     $('instruction').textContent=settings.count===1?'Look at the example, then find it on the card.':settings.count>2?'Find the one thing on every card. Tap it!':'One little thing connects these cards. Tap it!';
     $('status').textContent='Loading your set…';
     try{

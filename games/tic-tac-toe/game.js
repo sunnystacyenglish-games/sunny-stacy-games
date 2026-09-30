@@ -1,3 +1,4 @@
+import {setupThemePreview} from '../../shared/setup-preview.js';
 import {celebrate,clearCelebration} from './celebration.js';
 import {createSettingsPreview} from '../../shared/settings-preview.js';
 import {ANSWER_REVEAL_MS,concealTask,revealTask} from './task-presentation.js';
@@ -51,7 +52,7 @@ $('settingsOpen').onclick=()=>{if(!game){setup();return;}if(busy||$('task').open
 $('liveTheme').onchange=()=>preview.update({theme:$('liveTheme').value});
 $('liveSound').onchange=()=>preview.update({sound:$('liveSound').checked});
 $('liveTaskMode').onchange=()=>preview.update({taskMode:$('liveTaskMode').value});
-$('prefCancel').onclick=()=>$('preferences').close();$('preferences').addEventListener('close',()=>preview.cancel());
+$('prefCancel').onclick=()=>{preview.cancel();$('preferences').close();};$('preferences').addEventListener('cancel',()=>preview.cancel());$('preferences').addEventListener('close',()=>{if(!$('preferences').open)preview.cancel();});
 $('prefForm').onsubmit=e=>{e.preventDefault();preview.update({theme:$('liveTheme').value,sound:$('liveSound').checked,taskMode:$('liveTaskMode').value});preview.commit();persist();$('preferences').close();};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(e){fail(Error('Fullscreen is not available in this browser.'));}};
 $('copyLink').onclick=async()=>{try{await navigator.clipboard.writeText(gameURL(settings));$('turn').textContent='Game link copied. Import this set on other devices first.';}catch{fail(Error('Copy this game link: '+gameURL(settings)));}};
@@ -60,3 +61,5 @@ $('useImported').onclick=()=>{if(imported)replace(imported);};$('useReplacement'
 addEventListener('resize',fit);visualViewport?.addEventListener('resize',fit);document.addEventListener('fullscreenchange',fit);new ResizeObserver(fit).observe($('turn'));
 applyTheme(settings.theme);
 try{sets=await setRepository.list();const params=new URLSearchParams(location.search);requested=params.has('set')?params.get('set'):undefined;selected=resolveSetReference(sets,requested,settings.set);populate();if(selected){settings.set=selected.id;setup();}else{$('welcome').hidden=true;$('missing').hidden=false;}if(setRepository.warnings.length)fail(Error(setRepository.warnings.join('\n')));}catch(e){fail(e);}
+
+setupThemePreview($('setup'),$('themeSelect'),()=>settings.theme,theme=>{const saved=settings.theme;settings.theme=theme;applyTheme(theme);render();settings.theme=saved;});

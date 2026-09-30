@@ -7,3 +7,24 @@
 @media(max-width:600px){.die-label,.dice-measure .die-label{font-size:13px}.dice-page main{padding-left:22px;padding-right:18px}.dice-controls{gap:5px}}
 @media(max-height:500px){.die-label,.dice-measure .die-label{font-size:12px}.dice-page main{padding:5px 25px;gap:4px}.dice-controls{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:5px 10px}#grammar{gap:6px}#grammar label{font-size:10px;gap:3px}#grammar select{font-size:11px;max-width:102px;padding:4px}#addControls{gap:4px}#addControls button{font-size:11px;padding:5px 8px;min-height:30px}.table-actions{gap:5px;font-size:10px}.table-actions button{padding:4px 8px;font-size:11px}.dice-heading p{font-size:11px}.dice-heading{width:100%}}
 @media(prefers-reduced-motion:reduce){.die,.die-face,.die-visual{transition:none!important;animation:none!important}}
+.die{background:color-mix(in srgb,var(--panel) 78%,transparent);border-radius:12px;outline:1px solid color-mix(in srgb,var(--border) 45%,transparent)}.die-category{align-self:flex-start;text-align:left;margin-left:3px;max-width:calc(100% - 6px);font-size:9px;letter-spacing:.02em;border-radius:5px;background:var(--soft);color:var(--ink);padding:1px 3px;opacity:.85}.die-category:empty{padding:0;background:none}.dice-measure .die-category{margin:0}.die-label{font-size:var(--label-size,15px)!important}
+.die-category{width:max-content}
+
+/* A die is one surface. Metadata and vocabulary are inside it. */
+.die{background:none;border:0;outline:0;padding:0;gap:0;overflow:hidden;border-radius:18px;cursor:pointer}
+.die:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.die-face{width:100%;height:100%;padding:8px;display:flex;flex-direction:column;gap:4px;transform:none;box-sizing:border-box;border-radius:18px;overflow:hidden;box-shadow:var(--surface-elevation)}
+.die-category{height:var(--category-height);width:100%;max-width:100%;margin:0;padding:0;background:none;border:0;border-radius:0;opacity:.65;font-size:9px;text-align:left;overflow-wrap:anywhere;line-height:1.15}
+.die-image{height:max(var(--face),24px);width:100%;display:flex;align-items:center;justify-content:center;flex:none;font-size:calc(var(--face)*.57);line-height:1;overflow:hidden}
+.die-image img{width:var(--face);height:var(--face);max-width:100%;object-fit:contain}
+.die-image.image-error{font-size:12px;overflow-wrap:anywhere}
+.die-label{width:100%;max-width:100%;padding:0;line-height:1.2;overflow-wrap:anywhere;color:var(--ink)}
+.dice-measure .die-category{height:auto;width:auto;max-width:none}
+.dice-measure .die-label{padding:0}
+.rolling .die-face{animation:none}.rolling .die-image{animation:dice-roll .65s cubic-bezier(.18,.65,.28,1)}
+.die-action-menu{position:fixed;z-index:90;width:150px;padding:5px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--ink);box-shadow:0 8px 25px #0004}
+.die-action-menu button{display:block;width:100%;text-align:left;padding:10px 12px;border:0;background:transparent;color:var(--ink);border-radius:8px}
+.die-action-menu button:hover,.die-action-menu button:focus-visible{background:var(--soft)}
+@media(prefers-reduced-motion:reduce){.rolling .die-image{animation:none}}
+
+.die-face{padding:4px}

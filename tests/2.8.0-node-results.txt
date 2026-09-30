@@ -1,0 +1,16 @@
+PASS: 10078 deck/round checks; wrong click, double click, automatic/manual transition, auto-next off, score reset, settings validation.
+PASS: 648000 motion frames, no collisions or escaped bounds; every item travelled at least 0.350 card widths from its start.
+PASS: arbitrary set sizes, invalid data/URLs, duplicate IDs, JSON schema.
+PASS: unavailable storage keeps built-in sets playable and rejects unsaved writes.
+PASS: 20000 seeded flexible rounds; target coverage, distractor fairness, strict pair intersections, Mixed, sizes 3–10 and insufficient sets.
+PASS: 7743 adaptive rounds and guaranteed shuffled size hierarchy.
+PASS: authoritative IDs, internal density, canonical links, minimum-five and Unicode semantics.
+PASS: 180 measured compositions, rotated footprints, coverage, motion and stable sizes/angles.
+PASS: Tic-Tac-Toe normal/steal/failed steal/index 0/double answer/8 wins/steal win/draw/starter alternation and 10000 bag draws.
+PASS: exact themed markers, 140ms fallback reveal, safe settings transaction, 900 smooth 1.8:1 size hierarchies.
+PASS victory one-shot cleanup and reduced-motion suppression
+PASS Steal OFF loss of turn / same square / bag draw only on choose; active steal finishes; twin cannon origins, varied ballistic rise/apex/fall.
+PASS Steal defaults ON, remembered OFF and explicit URL override.
+PASS Wordly eligibility, 10000 duplicate-count cases, locked-green exclusion/propagation/input/backspace, hints/current row/all-hints success, every medal boundary, failure, shuffled bag and clean round reset.
+PASS Story Dice: 16 grammar combinations, balanced grammar/expression bags, 225 prompts, story/concept limits, 18 sentence dice, isolated reroll/remove, current grammar, Clear preservation, immutable content.
+PASS source-volume playback, silent disabled effects, single clack channel, victory 3s hold + 1.2s fade, stop/reset/restart, six bundled assets
