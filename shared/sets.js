@@ -1,5 +1,6 @@
 import {exampleSets} from '../data/example-sets.js';
 import {transact} from './database.js';
+import {setFolderAssignments,getSetFolderId,folderRepository} from './folders.js';
 import {validateSet,validatePlayableSet} from './content-rules.js';
 export {validateSet,imageTypes} from './content-rules.js';
 export const newId=()=>crypto.randomUUID?.()||`id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -13,12 +14,13 @@ export const setRepository={
     this.warnings=[];let users=[];
     try{const records=await transact('readonly',store=>store.getAll());for(const record of records){try{users.push(validateSet(record));}catch{this.warnings.push('A damaged saved set could not be opened. Other sets are still available.');}}}
     catch(error){this.warnings.push(error.message);}
-    return [...structuredClone(builtins),...users.sort((a,b)=>b.updatedAt-a.updatedAt)];
+    let assignments=new Map();try{assignments=await setFolderAssignments();}catch(error){if(!this.warnings.includes(error.message))this.warnings.push(error.message);}
+    return [...structuredClone(builtins),...users.sort((a,b)=>b.updatedAt-a.updatedAt)].map(set=>({...set,folderId:assignments.get(set.id)??null}));
   },
-  async get(id){const demo=builtins.find(set=>set.id===id);if(demo)return structuredClone(demo);const set=await transact('readonly',store=>store.get(id));return set?validateSet(set):null;},
+  async get(id){const demo=builtins.find(set=>set.id===id),set=demo?structuredClone(demo):await transact('readonly',store=>store.get(id));if(!set)return null;validateSet(set);return {...set,folderId:await getSetFolderId(id).catch(()=>null)};},
   async create(data){const set=cleanSet(data,newId());await transact('readwrite',store=>store.add(set));return set;},
   async importMissing(data,id){if(!/^[A-Za-z0-9_-]{1,120}$/.test(id)||builtins.some(set=>set.id===id))throw Error('Invalid or reserved set ID.');const set=cleanSet(data,id);await transact('readwrite',store=>store.add(set));return set;},
   async update(id,data){if(builtins.some(set=>set.id===id))throw Error('Make a copy to edit this built-in set.');if(!await this.get(id))throw Error('This set no longer exists. Save a new copy.');const set=cleanSet(data,id);await transact('readwrite',store=>store.put(set));return set;},
-  async duplicate(id){const source=await this.get(id);if(!source)throw Error('Set not found.');return this.create({...source,name:`${source.name.slice(0,110)} — Copy`,items:source.items.map(item=>({...item,id:newId()}))});},
+  async duplicate(id){const source=await this.get(id);if(!source)throw Error('Set not found.');const copy=await this.create({...source,name:`${source.name.slice(0,110)} — Copy`,items:source.items.map(item=>({...item,id:newId()}))});if(source.folderId)await folderRepository.move(copy.id,source.folderId);return {...copy,folderId:source.folderId};},
   async delete(id){if(builtins.some(set=>set.id===id))throw Error('Built-in sets cannot be deleted.');await transact('readwrite',store=>store.delete(id));}
 };

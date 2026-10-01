@@ -1,0 +1,56 @@
+[hidden]{display:none!important}.wordly-page{height:100dvh;overflow:hidden}.wordly-page main{height:100%;max-width:1400px;margin:auto;padding:10px 38px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}.wordly-heading{display:flex;align-items:center;justify-content:center;gap:14px;padding:0;background:none;border:0;flex:none}.wordly-heading h1{font-size:20px;margin:0}.wordly-heading span{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:45%}#welcome{text-align:center;margin:auto;max-width:600px}#playArea{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}.wordly-stage{display:grid;grid-template-columns:minmax(120px,.6fr) minmax(0,1fr);align-items:center;gap:30px;flex:1;min-height:0;max-width:1000px;width:100%;margin:auto}.clue-panel{text-align:center;min-width:0}#clue{font-size:clamp(72px,15vw,190px);line-height:1.15;overflow:hidden}#clue img{max-width:100%;max-height:30dvh;object-fit:contain}#clue.image-error{font-size:16px}#attemptLabel{font-size:14px;margin:8px 0}#gridViewport{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:4px}#grid{outline:none;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:2px}#grid:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px}.letter-row{display:grid;grid-template-columns:repeat(var(--length),var(--tile,42px));gap:4px;flex:none}.tile{position:relative;display:flex;align-items:center;justify-content:center;width:var(--tile,42px);height:var(--tile,42px);border:2px solid var(--border);border-radius:7px;background:var(--panel);color:var(--ink);font-size:calc(var(--tile,42px)*.53);font-weight:800;line-height:1;box-sizing:border-box}.letter-row.active .tile{border-color:var(--ink)}.tile.cursor{outline:3px solid var(--accent);outline-offset:-3px}.tile.correct{background:#318451;color:white;border-color:#256840}.tile.present{background:#f3cd54;color:#292313;border-color:#b18a14}.tile.absent{background:#b84b50;color:white;border-color:#92363c}.tile .state-icon{position:absolute;bottom:1px;right:2px;font-size:9px;font-weight:bold}.tile.revealing{animation:tile-reveal .16s ease-out}.wordly-controls{display:flex;justify-content:center;gap:10px;flex:none}.wordly-controls button{min-height:42px}#keyboardToggle{min-width:48px;font-size:23px;padding:4px 14px}#status{font-size:13px;min-height:18px;text-align:center;margin:0;flex:none}#keyboard{max-width:700px;width:100%;margin:0 auto;padding:8px 4px 0;border-top:1px solid var(--border);flex:none}.keyboard-row{display:flex;justify-content:center;gap:5px;margin-bottom:5px}.keyboard-row button{flex:1;max-width:54px;min-width:0;min-height:42px;padding:4px 0;font-size:16px;font-weight:700;border-radius:8px;background:var(--panel);color:var(--ink)}.keyboard-row button.wide{max-width:94px;flex:1.8;font-size:13px}.wordly-page dialog{width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;border:2px solid var(--border);border-radius:20px;padding:24px;background:var(--panel);color:var(--ink);box-shadow:0 20px 70px #0005}.wordly-page dialog::backdrop{background:#11182799}.wordly-page dialog label{display:block;margin:12px 0}.wordly-page select{display:block;width:100%;min-width:0;margin-top:5px;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit}.wordly-page fieldset{border:0;margin:0;padding:0}.length-options{display:flex;gap:5px;flex-wrap:wrap}.length-options button{flex:1;min-width:36px;padding:8px}.length-options button[aria-pressed=true]{background:var(--accent);color:var(--primary-ink)}.wordly-page button:disabled{opacity:.4;cursor:default}.wordly-page .primary{background:var(--accent);color:var(--primary-ink)}.dialog-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}.dialog-actions button,.dialog-actions a{min-height:44px}#result{text-align:center}#result h2{margin-top:0}#medal{font-size:64px}#answer{font-size:32px;font-weight:bold;letter-spacing:.08em}#resultImage{font-size:80px;margin:10px 0}#resultImage img{max-height:100px;max-width:180px}#error{margin:0;text-align:center;font-size:13px;flex:none}.sound-option input{width:20px;height:20px;vertical-align:middle}@keyframes tile-reveal{from{transform:rotateX(80deg)}to{transform:rotateX(0)}}
+@media(max-width:600px) and (min-height:501px){.wordly-page main{padding:8px 24px}.wordly-heading h1{font-size:17px}.wordly-stage{display:flex;flex-direction:column;gap:5px}.clue-panel{flex:none}#clue{font-size:100px}#clue img{max-height:110px;max-width:170px}#attemptLabel{font-size:12px;margin:2px}#gridViewport{width:100%;flex:1}.keyboard-open #clue{font-size:70px}.keyboard-open #clue img{max-height:75px}#keyboard{padding-top:6px}.keyboard-row{gap:3px}.keyboard-row button{font-size:14px;min-height:40px}.wordly-page dialog{padding:18px}}
+@media(max-height:500px){.wordly-page main{padding:5px 26px;gap:4px}.wordly-heading h1{font-size:15px}#playArea{gap:4px}.wordly-stage{gap:15px;grid-template-columns:minmax(90px,.4fr) minmax(0,1fr)}#clue{font-size:74px}#clue img{max-height:105px}#attemptLabel{font-size:11px;margin:0}.wordly-controls button{min-height:34px;padding:4px 14px}#status{font-size:11px;min-height:14px}#keyboard{padding-top:4px;max-width:640px}.keyboard-row{margin-bottom:3px}.keyboard-row button{min-height:34px;font-size:14px}.keyboard-open #clue{font-size:52px}.keyboard-open #clue img{max-height:60px}.wordly-page dialog{padding:16px}#resultImage{font-size:50px}#resultImage img{max-height:60px}#medal{font-size:42px}}
+@media(prefers-reduced-motion:reduce){.wordly-page *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Size the actual tiles and feedback together, using rows independently of columns. */
+#grid,.letter-row{gap:var(--gap,4px)}.tile .state-icon{font-size:clamp(9px,calc(var(--tile,42px)*.19),18px)}.wordly-stage{max-width:1200px;grid-template-columns:minmax(120px,.5fr) minmax(0,1fr)}#gridViewport{display:flex;flex-direction:column}#grid{margin-block:auto}
+/* Available visual viewport includes mobile browser chrome and the native keyboard. */
+html:has(body.wordly-page){height:100%;overflow:hidden}
+body.wordly-page{position:fixed;inset:var(--game-top,0px) 0 auto;height:var(--game-vh,100dvh);max-height:var(--game-vh,100dvh);overflow:hidden}
+.wordly-page main{padding-bottom:max(8px,env(safe-area-inset-bottom));gap:5px}
+#playArea{gap:5px}
+#gridViewport{box-shadow:none!important;overflow:hidden;align-items:center;justify-content:center;padding:5px;min-height:0}
+#grid{width:max-content;max-width:100%;margin:0;padding:3px;border-radius:9px;flex:none}
+.native-input{position:absolute;top:40px;left:50%;width:1px;height:1px;opacity:.01;border:0;padding:0;font-size:16px;pointer-events:none}
+#lockedStatus{font-size:12px;line-height:1.2;text-align:center;margin:0;flex:none}
+#status:empty{display:none}#status{min-height:0}
+@media(max-width:600px){
+ .wordly-stage{display:flex;flex-direction:column;gap:3px;justify-content:center}
+ .clue-panel{flex:none}#gridViewport{width:100%;flex:1;justify-content:flex-start}
+ #clue{font-size:clamp(60px,15dvh,112px);line-height:1}#clue img{max-height:112px;max-width:160px}
+ #attemptLabel{margin:2px 0;font-size:12px;line-height:1.2}
+ .keyboard-open #clue{font-size:64px}.keyboard-open #clue img{max-height:64px}
+ .wordly-controls{gap:5px}.wordly-controls button{padding:5px 10px;min-height:38px}
+ #keyboard{padding:3px 1px 0}.keyboard-row{gap:3px;margin-bottom:3px}.keyboard-row button{min-height:36px}
+}
+body.wordly-page[data-short-viewport=true] main{gap:3px;padding-top:4px;padding-bottom:4px}
+body.wordly-page[data-short-viewport=true] #playArea{gap:3px}
+body.wordly-page[data-short-viewport=true] .wordly-stage{gap:3px}
+body.wordly-page[data-short-viewport=true] #clue{font-size:64px;line-height:1}
+body.wordly-page[data-short-viewport=true] #clue img{max-height:64px}
+body.wordly-page[data-short-viewport=true] #attemptLabel{margin:1px;font-size:11px}
+body.wordly-page[data-short-viewport=true] .wordly-controls button{min-height:34px;padding:4px 9px}
+body.wordly-page[data-short-viewport=true] .keyboard-row button{min-height:32px;padding:3px 0}
+body.wordly-page[data-short-viewport=true] #lockedStatus{font-size:11px}
+body.wordly-page[data-tiny-viewport=true] .wordly-stage{display:grid;grid-template-columns:minmax(65px,.32fr) minmax(0,1fr);align-items:center;gap:7px}
+body.wordly-page[data-tiny-viewport=true] #clue{font-size:48px}
+body.wordly-page[data-tiny-viewport=true] #clue img{max-height:48px}
+body.wordly-page[data-tiny-viewport=true] #gridViewport{height:100%;justify-content:center}
+body.wordly-page[data-tiny-viewport=true] .keyboard-row button{min-height:28px;font-size:13px}
+body.wordly-page[data-tiny-viewport=true] .game-header h1{font-size:18px!important}
+body.wordly-page[data-tiny-viewport=true] .wordly-controls button{min-height:30px}
+/* Keep clue, real grid and controls together instead of stretching an empty field. */
+.wordly-page #playArea{justify-content:center}
+.wordly-page .wordly-stage{flex:none;margin:0 auto}
+.wordly-page #gridViewport{flex:none;justify-content:center}
+body.wordly-page{min-height:0!important}
+/* Give raster prompts an explicit footprint instead of their intrinsic dimensions. */
+body.wordly-page #clue{display:flex;align-items:center;justify-content:center;height:1em;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+body.wordly-page #clue img{display:block;width:1em;height:1em;max-width:100%;max-height:100%;object-fit:contain}
+/* Desktop and embedded windows share the same available-space sizing. */
+@media(min-width:601px) and (min-height:440px){
+ body.wordly-page #clue,body.wordly-page[data-short-viewport] #clue{font-size:min(clamp(250px,var(--clue-target,270px),300px),var(--clue-space,300px),var(--clue-width,300px))}
+}
+body.wordly-page #clue.image-error{height:auto;min-height:48px;font-family:inherit;font-size:16px}
+body.wordly-page[data-short-viewport] #clue img{max-height:100%;max-width:100%}
