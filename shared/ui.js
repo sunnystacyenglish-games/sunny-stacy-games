@@ -1,3 +1,4 @@
+import {mountSetupMenu} from './setup-menu.js';
 import {applyTheme} from '../games/dobble/theme-view.js';
 import {THEME_OPTIONS} from './themes.js';
 import {loadSettings,saveSettings} from './storage.js';
@@ -14,15 +15,18 @@ export function confirmDialog(title,description,action='Delete'){
 }
 export function chooseGame(set,options){
  if(!options){location.href=gameURL(set,loadSettings());return;}
- const {sets,settings,onPlay,onSelect,onCancel}=options;const committedTheme=settings.theme;
- const dialog=element('dialog','app-dialog pregame');dialog.setAttribute('aria-label','Set up Dobble');
- const title=element('h2','','Set up Dobble'),summary=element('p','set-summary');dialog.append(title,summary);
- const label=element('label','','Content Set'),select=element('select');select.setAttribute('aria-label','Content Set');for(const entry of sets){const option=element('option','',entry.name);option.value=entry.id;select.append(option);}select.value=set.id;label.append(select);dialog.append(label);
- const controls=element('div','pregame-controls'),note=element('p','help');note.setAttribute('role','status');let state=resolveConfiguration(set,settings);
- select.onchange=()=>{set=sets.find(entry=>entry.id===select.value);state=resolveConfiguration(set,state.settings);sync();};
- function group(key,label,options){const field=element('fieldset');field.append(element('legend','',label));const row=element('div','choice-row');for(const [value,text] of options){const option=button(String(text),()=>{state=resolveConfiguration(set,{...state.settings,[key]:value});if(key==='theme')applyTheme(state.settings.theme);sync();});option.dataset.key=key;option.dataset.value=String(value);row.append(option);}field.append(row);controls.append(field);}
- group('count','Number of cards',CARD_OPTIONS.map(v=>[v,v]));group('mode','Card content',MODE_OPTIONS);group('movement','Movement',MOVEMENT_OPTIONS);group('theme','Theme',THEME_OPTIONS);group('sound','Sound',[[true,'On'],[false,'Off']]);group('autoNext','Auto next cards',[[true,'On'],[false,'Off']]);group('delay','Correct-answer delay',[[350,'Fast'],[600,'Normal'],[1000,'Slow']]);
- let started=false;const actions=element('div','row pregame-actions'),play=button('Play',()=>{state=resolveConfiguration(set,state.settings);if(!state.playable)return;started=true;saveSettings(state.settings);dialog.close();onPlay(set,state.settings);},'primary');actions.append(button('Cancel',()=>dialog.close()),play);dialog.append(controls,note,actions);
- function sync(){summary.textContent=set.name+' · '+set.items.length+' concepts · Dobble will use this set.';for(const option of controls.querySelectorAll('button')){const key=option.dataset.key,value=option.dataset.value;option.disabled=key==='count'?!state.counts.includes(+value):key==='mode'?!state.modes[value]:false;const active=String(state.settings[key])===value;option.setAttribute('aria-pressed',String(active));option.classList.toggle('selected',active);}note.textContent=state.note+(state.settings.mode==='mixed'?' Word ↔ Image uses 1–2 cards.':'');play.disabled=!state.playable;}
- sync();document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();if(!started){applyTheme(committedTheme);onCancel?.();}},{once:true});dialog.showModal();return dialog;
+ const {sets,settings,onPlay,onCancel,contentState}=options;let menu,started=false;
+ const dialog=element('dialog','app-dialog pregame'),form=element('form'),title=element('h2','','Set up Dobble');dialog.setAttribute('aria-label','Set up Dobble');dialog.append(form);
+ const select=(label,choices,value)=>{const wrapper=element('label','',label),input=element('select');input.setAttribute('aria-label',label);for(const [key,text] of choices)input.append(new Option(text,String(key)));input.value=String(value);wrapper.append(input);form.append(wrapper);return input;};
+ const toggle=(label,value)=>{const wrapper=element('label','',label),input=element('input');input.type='checkbox';input.checked=value;input.setAttribute('aria-label',label);wrapper.append(input);form.append(wrapper);return input;};
+ const setSelect=select('Content Set',sets.map(s=>[s.id,s.name]),set.id),theme=select('Theme',THEME_OPTIONS,settings.theme),sound=toggle('Sound',settings.sound);
+ const count=select('Number of cards',CARD_OPTIONS.map(v=>[v,v]),settings.count),mode=select('Content type',MODE_OPTIONS,settings.mode),movement=toggle('Movement',settings.movement!=='off'),speed=select('Movement speed',MOVEMENT_OPTIONS.filter(([id])=>id!=='off'),settings.movement==='off'?'slow':settings.movement),autoNext=toggle('Auto next turn',settings.autoNext);
+ for(const [name,input] of Object.entries({set:setSelect,theme,sound,count,mode,movementEnabled:movement,movement:speed,autoNext}))input.name=name;
+ const note=element('p','help'),rule=element('p','help'),actions=element('div','row'),play=button('Play',()=>{},'primary');play.type='submit';actions.append(button('Cancel',()=>dialog.close()),play);form.append(title,note,rule,actions);
+ const raw=()=>({...settings,set:setSelect.value,theme:theme.value,sound:sound.checked,count:+count.value,mode:mode.value,movement:movement.checked?speed.value:'off',autoNext:autoNext.checked,delay:600});
+ function constrain(){set=sets.find(s=>s.id===setSelect.value);const content=menu?.sessionSet(set)||set,state=resolveConfiguration(content,raw());for(const option of count.options)option.disabled=!state.counts.includes(+option.value);for(const option of mode.options)option.disabled=!state.modes[option.value];count.value=String(state.settings.count);mode.value=state.settings.mode;speed.closest('label').hidden=!movement.checked;note.textContent=state.note;rule.textContent=state.settings.mode==='mixed'?'Word ↔ Image uses 1–2 cards.':'With 3–4 cards, find the concept shared by every card.';play.disabled=!state.playable;menu?.sync();return state;}
+ for(const input of [setSelect,count,mode,movement,speed,autoNext])input.addEventListener('change',constrain);
+ menu=mountSetupMenu({dialog,form,title,setSelect,themeSelect:theme,sound,getSets:()=>sets,setSets:next=>{sets.splice(0,sets.length,...next);},onContentChange:constrain,gameplay:[count.closest('label'),mode.closest('label'),movement.closest('label'),speed.closest('label'),autoNext.closest('label'),rule],status:[note],footer:actions,committedTheme:()=>settings.theme,state:contentState});
+ form.onsubmit=event=>{event.preventDefault();const configuration=constrain();if(!configuration.playable)return;const content=menu.sessionSet(set);menu.commit();started=true;saveSettings(configuration.settings);onPlay(content,configuration.settings);dialog.close();};
+ dialog.addEventListener('close',()=>{menu.destroy();dialog.remove();if(!started)onCancel?.();},{once:true});document.body.append(dialog);menu.begin();constrain();dialog.showModal();return dialog;
 }
