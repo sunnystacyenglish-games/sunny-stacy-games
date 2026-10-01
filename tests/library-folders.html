@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Local library folder checks</title><button id="run">Run folder checks</button><pre></pre><script type="module">
+import {setRepository,newId} from '../shared/sets.js';
+import {folderRepository,getSetFolderId} from '../shared/folders.js';
+const out=document.querySelector('pre'),check=(value,message)=>{if(!value)throw Error(message);};
+document.querySelector('button').onclick=async event=>{
+ event.target.disabled=true;out.textContent='';const setIds=[],folderIds=[];
+ try{
+  const a=await folderRepository.create('__Folder test '+newId(),'#4E83BC'),b=await folderRepository.create('__Folder test '+newId());folderIds.push(a.id,b.id);
+  const set=await setRepository.create({name:'__Folder preservation test',items:['cat','bat','hat','rat','mat'].map(word=>({id:newId(),word,image:{type:'emoji',value:'🐱'}}))});setIds.push(set.id);const original=JSON.stringify(set.items),timestamp=set.updatedAt;
+  check(await getSetFolderId(set.id)===null,'New set should start at root');await folderRepository.move(set.id,a.id);
+  let moved=await setRepository.get(set.id);check(moved.id===set.id&&moved.folderId===a.id&&JSON.stringify(moved.items)===original&&moved.updatedAt===timestamp,'Move changed content or IDs');
+  await setRepository.update(set.id,{...moved,name:'__Edited folder test'});check((await setRepository.get(set.id)).folderId===a.id,'Editing lost folder');
+  const copy=await setRepository.duplicate(set.id);setIds.push(copy.id);check(copy.id!==set.id&&(await setRepository.get(copy.id)).folderId===a.id,'Copy lost folder');
+  await folderRepository.rename(a.id,'__Renamed','#38A080');const renamed=(await folderRepository.list()).find(f=>f.id===a.id);check(renamed.name==='__Renamed'&&renamed.color==='#38A080','Rename/color not saved');
+  await folderRepository.reorder(b.id,a.id);const ordered=await folderRepository.list();check(ordered.findIndex(f=>f.id===b.id)<ordered.findIndex(f=>f.id===a.id),'Order not saved');
+  await folderRepository.move(set.id,b.id);await folderRepository.move(set.id,null);check((await setRepository.get(set.id)).folderId===null,'Move to root failed');
+  await folderRepository.delete(a.id);check((await setRepository.get(copy.id)).folderId===null&&JSON.stringify((await setRepository.get(copy.id)).items.map(i=>i.word))===JSON.stringify(set.items.map(i=>i.word)),'Deleting folder deleted/changed set');
+  let rejected=false;try{await folderRepository.move(set.id,a.id);}catch{rejected=true;}check(rejected&&(await setRepository.get(set.id)).folderId===null,'Missing destination accepted');
+  rejected=false;try{await folderRepository.create('   ');}catch{rejected=true;}check(rejected,'Empty folder name accepted');
+  out.textContent='PASS root compatibility, moves preserve IDs/content/timestamps, edit/copy retain folder, rename/custom color, persisted order, root fallback, folder deletion preserves sets, invalid destinations/names rejected.\n';
+ }catch(error){out.textContent+='FAIL '+error.stack;console.error(error);}
+ finally{for(const id of setIds)await setRepository.delete(id);for(const id of folderIds)await folderRepository.delete(id);event.target.disabled=false;}
+};
+</script>
