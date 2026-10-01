@@ -1,3 +1,4 @@
+import {stopTileClack} from './tile-audio.js';
 // Original supplied files: unity playback volume, no loudness processing.
 const channels=new Map(),generations=new Map();
 let fade;
@@ -6,12 +7,11 @@ function play(name,enabled=true){if(!enabled)return null;try{stopSound(name);let
 export const playClick=enabled=>play('ui-click',enabled);
 export const playCorrect=enabled=>play('correct-chime',enabled);
 export const playWrong=enabled=>play('wrong-soft-buzz',enabled);
-// A single channel per effect prevents a pile-up during sequential tile reveals.
-export const playTileClack=enabled=>play('tile-clack',enabled);
+export {prepareTileClack,playTileClack,finishTileClack} from './tile-audio.js';
 export const playDiceRoll=enabled=>play('dice-roll',enabled);
 export const stopVictory=()=>stopSound('victory');
 export function playVictory(enabled=true){const audio=play('victory',enabled);if(!audio)return;fade=setInterval(()=>{if(audio.ended){stopVictory();return;}if(audio.currentTime>=4.2){stopVictory();return;}audio.volume=audio.currentTime<=3?1:Math.max(0,1-(audio.currentTime-3)/1.2);},25);}
-export function stopAllAudio(){for(const name of channels.keys())stopSound(name);}
+export function stopAllAudio(){stopTileClack();for(const name of channels.keys())stopSound(name);}
 if(typeof addEventListener==='function')addEventListener('pagehide',stopAllAudio);
 
 // Disabling sound immediately silences an effect already in progress.
