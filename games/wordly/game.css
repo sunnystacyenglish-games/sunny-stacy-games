@@ -45,3 +45,12 @@ body.wordly-page[data-tiny-viewport=true] .wordly-controls button{min-height:30p
 .wordly-page .wordly-stage{flex:none;margin:0 auto}
 .wordly-page #gridViewport{flex:none;justify-content:center}
 body.wordly-page{min-height:0!important}
+/* Give raster prompts an explicit footprint instead of their intrinsic dimensions. */
+body.wordly-page #clue{display:flex;align-items:center;justify-content:center;height:1em;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+body.wordly-page #clue img{display:block;width:1em;height:1em;max-width:100%;max-height:100%;object-fit:contain}
+/* Desktop and embedded windows share the same available-space sizing. */
+@media(min-width:601px) and (min-height:440px){
+ body.wordly-page #clue,body.wordly-page[data-short-viewport] #clue{font-size:min(clamp(250px,var(--clue-target,270px),300px),var(--clue-space,300px),var(--clue-width,300px))}
+}
+body.wordly-page #clue.image-error{height:auto;min-height:48px;font-family:inherit;font-size:16px}
+body.wordly-page[data-short-viewport] #clue img{max-height:100%;max-width:100%}

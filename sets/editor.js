@@ -61,15 +61,15 @@ $('playSet').onclick=()=>chooseSetGame(current);
 addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
 document.addEventListener('click',async event=>{const link=event.target.closest('a[href]');if(!link||!dirty||event.ctrlKey||event.metaKey)return;event.preventDefault();if(await confirmDialog('Leave without saving?','Your latest changes have not been saved.','Leave')){dirty=false;location.href=link.href;}});
 async function initialize(){
-  const id=new URLSearchParams(location.search).get('id');
-  if(id){const set=await setRepository.get(id);if(!set)throw Error('This set was not found. Return to My Sets or create a new set.');current=set;
+  const params=new URLSearchParams(location.search),id=params.get('id');let requestedIndex=-1;
+  if(id){const set=await setRepository.get(id);if(!set)throw Error('This set was not found. Return to My Sets or create a new set.');current=set;requestedIndex=set.items.findIndex(item=>item.id===params.get('item'));
     if(set.builtin){current={...set,id:newId(),name:`${set.name} — Copy`,items:set.items.map(item=>({...item,id:newId()}))};delete current.builtin;message('You are editing a copy. The built-in set stays unchanged.');}
     else{savedId=set.id;$('editorTitle').textContent='Edit Set';$('playSet').hidden=false;}
   }else current.items=[{id:newId(),word:'',image:{type:'emoji',value:''}}];
   current.imageSource ||= inferImageSource(current);
   if(current.imageSource==='mixed'){const option=element('option','','Existing mixed sources');option.value='mixed';$('imageSource').append(option);}
   $('imageSource').value=current.imageSource;$('setName').value=current.name;
-  $('editorContent').hidden=!id;$('continueEditor').hidden=!!id;draw();
+  $('editorContent').hidden=!id;$('continueEditor').hidden=!!id;draw();if(requestedIndex>=0){activate(current.items[requestedIndex].id);const row=$('items').children[requestedIndex];row.scrollIntoView({block:'center'});row.querySelector('input')?.focus({preventScroll:true});}
 }
 initialize().catch(error=>{message(error.message,true);$('editorForm').hidden=true;});
 
