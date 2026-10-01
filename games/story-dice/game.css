@@ -28,3 +28,25 @@
 @media(prefers-reduced-motion:reduce){.rolling .die-image{animation:none}}
 
 .die-face{padding:4px}
+/* Square dice: a top metadata overlay and one centered learning-content group. */
+html:has(body.dice-page){height:100%;overflow:hidden}
+body.dice-page{position:fixed;inset:var(--game-top,0px) 0 auto;height:var(--game-vh,100dvh);overflow:hidden}
+.die{aspect-ratio:1 / 1;border-radius:16px}
+.die-face{position:relative;display:block;width:100%;height:100%;padding:0;aspect-ratio:1 / 1;border-radius:16px;overflow:hidden}
+.die-category{position:absolute;top:5px;left:var(--die-padding,4px);right:var(--die-padding,4px);width:auto;max-width:none;height:auto;margin:0;padding:0;font-size:clamp(7px,calc(var(--label-size)*.5),10px);line-height:1.1;pointer-events:none;background:none}
+.die-kind,.die-grammar{display:block}.die-grammar{font-size:.9em;margin-top:2px;white-space:nowrap;letter-spacing:0}
+.die-content{position:absolute;top:var(--metadata-height,23px);bottom:var(--die-padding,4px);left:var(--die-padding,4px);right:var(--die-padding,4px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:0;min-width:0}
+.die-image{width:100%;height:var(--face);min-height:0;font-size:calc(var(--face)*.85);line-height:1;flex:none}
+.die-image img{max-width:100%;width:var(--face);height:var(--face);object-fit:contain}
+.die-label{width:100%;font-size:var(--label-size)!important;line-height:1.15;flex:none;padding:0;overflow-wrap:anywhere}
+.dice-measure .die-label{line-height:1.15}
+body.dice-page[data-short-viewport=true] main{gap:4px;padding-top:5px;padding-bottom:5px}
+body.dice-page[data-short-viewport=true] .dice-controls{gap:3px}
+body.dice-page[data-short-viewport=true] #addControls{gap:4px}
+body.dice-page[data-short-viewport=true] #addControls button{padding:5px 8px;min-height:30px;font-size:11px}
+body.dice-page[data-short-viewport=true] #grammar .option-buttons button{padding:3px 5px;min-height:25px;font-size:10px}
+body.dice-page[data-short-viewport=true] .table-actions{min-height:26px;gap:8px}
+body.dice-page[data-short-viewport=true] .table-actions button{padding:3px 9px;font-size:11px}
+body.dice-page[data-tiny-viewport=true] .dice-controls{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:3px 8px}
+body.dice-page{min-height:0!important}
+.die-category{top:2px;font-size:var(--meta-font,8px)}.die-grammar{margin-top:1px}.die-label{line-height:var(--label-leading,1.15)}

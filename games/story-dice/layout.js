@@ -1,35 +1,27 @@
-// Measure vocabulary at its normal font size; only the illustrated face scales.
+// Square cells are fitted to both dimensions; content is measured inside each cell.
 export function layoutDice(table){
  const nodes=[...table.querySelectorAll('.die')];if(!nodes.length)return;
- const width=table.clientWidth-16,height=table.clientHeight-16;if(width<=0||height<=0)return;
- const gap=6,measure=document.createElement('div');measure.className='dice-measure';document.body.append(measure);
- const cache=new Map();const compact=innerHeight<=500?12:innerWidth<=600?13:15;let labelSize=compact;
- function textHeight(node,selector,w){const source=node.querySelector(selector),key=selector+'|'+source.textContent+'|'+w+'|'+labelSize;if(cache.has(key))return cache.get(key);if(!source.textContent)return 0;const copy=source.cloneNode(true);copy.style.width=w+'px';if(selector==='.die-label')copy.style.setProperty('font-size',labelSize+'px','important');measure.replaceChildren(copy);const h=Math.ceil(copy.getBoundingClientRect().height);cache.set(key,h);return h;}
- let best,fallback;
- for(let columns=1;columns<=Math.min(nodes.length,Math.floor(width/76));columns++){
-  const cellWidth=Math.floor((width-gap*(columns-1))/columns),labelWidth=Math.min(190,cellWidth-10),rows=Math.ceil(nodes.length/columns),overheads=[];
-  for(let r=0;r<rows;r++){let category=0,label=0;for(const node of nodes.slice(r*columns,(r+1)*columns)){category=Math.max(category,textHeight(node,'.die-category',labelWidth));label=Math.max(label,textHeight(node,'.die-label',labelWidth));}overheads.push({category,label,total:category+label+18});}
-  const room=(height-gap*(rows-1)-overheads.reduce((sum,v)=>sum+v.total,0))/rows;
-  const face=Math.floor(Math.min(cellWidth-10,room,260/Math.pow(nodes.length,.16)));
-  const minimumHeight=overheads.reduce((sum,v)=>sum+v.total+24,0)+gap*(rows-1);
-  if(!fallback||minimumHeight<fallback.minimumHeight)fallback={columns,cellWidth,rows,face:24,overheads,minimumHeight};
-  if(room<24||face<12)continue;
-  // Maximise actual die size, without shrinking or scaling the vocabulary.
-  if(!best||face>best.face)best={columns,cellWidth,rows,face,overheads};
+ const width=table.clientWidth-12,height=table.clientHeight-12;if(width<=0||height<=0)return;
+ const gap=6;let best;
+ for(let columns=1;columns<=nodes.length;columns++){
+  const rows=Math.ceil(nodes.length/columns),side=Math.floor(Math.min((width-gap*(columns-1))/columns,(height-gap*(rows-1))/rows,360));
+  if(!best||side>best.side)best={columns,rows,side};
  }
- const constrained=!best;if(!best)best=fallback;if(!best){measure.remove();return;}table.dataset.fit=constrained?'constrained':'ok';table.style.overflowY=constrained?'auto':'hidden';
- // Enlarge the words only in spare room; never sacrifice the chosen face size.
- const wanted=Math.min(28,compact+Math.max(0,(best.face-55)*.075));
- for(let size=Math.floor(wanted);size>=compact;size--){labelSize=size;const overheads=[];for(let r=0;r<best.rows;r++){let category=0,label=0;for(const node of nodes.slice(r*best.columns,(r+1)*best.columns)){category=Math.max(category,textHeight(node,'.die-category',Math.min(190,best.cellWidth-10)));label=Math.max(label,textHeight(node,'.die-label',Math.min(190,best.cellWidth-10)));}overheads.push({category,label,total:category+label+18});}if(overheads.reduce((sum,v)=>sum+v.total+Math.max(best.face,24),0)+gap*(best.rows-1)<=height){best.overheads=overheads;break;}}
+ const {columns,rows,side}=best,metadata=side>=180?30:side>=95?23:16,padding=side>=180?10:side<85?2:4,contentHeight=Math.max(1,side-metadata-padding-4),contentWidth=Math.max(1,side-padding*2-2),wanted=Math.min(30,Math.max(11,Math.round(side*.085))),minFont=side<85?7:11;
+ const measure=document.createElement('div');measure.className='dice-measure';document.body.append(measure);
+ table.dataset.fit='ok';table.style.overflowY='hidden';
+ const totalHeight=rows*side+(rows-1)*gap;let y=6+(height-totalHeight)/2;
+ for(let row=0;row<rows;row++){
+  const members=nodes.slice(row*columns,(row+1)*columns),rowWidth=members.length*side+(members.length-1)*gap;
+  members.forEach((node,column)=>{
+   const label=node.querySelector('.die-label').cloneNode(true);label.style.width=contentWidth+'px';label.style.lineHeight=side<85?'1.05':'1.15';measure.replaceChildren(label);let font=wanted,labelHeight;
+   for(;font>=minFont;font-=.5){label.style.setProperty('font-size',font+'px','important');labelHeight=Math.ceil(label.getBoundingClientRect().height);if(labelHeight+Math.min(24,side*.18)+3<=contentHeight)break;}
+   font=Math.max(minFont,font);label.style.setProperty('font-size',font+'px','important');labelHeight=Math.ceil(label.getBoundingClientRect().height);
+   // Vocabulary takes priority over surplus image whitespace on crowded tables.
+   const image=Math.max(0,Math.min(side*.64,contentHeight-labelHeight-3));
+   node.style.left=(6+(width-rowWidth)/2+column*(side+gap))+'px';node.style.top=y+'px';node.style.width=side+'px';node.style.height=side+'px';
+   node.style.setProperty('--label-size',font+'px');node.style.setProperty('--label-leading',side<85?'1.05':'1.15');node.style.setProperty('--meta-font',side<85?'6px':side<180?'8px':'10px');node.style.setProperty('--face',image+'px');node.style.setProperty('--label-width',contentWidth+'px');node.style.setProperty('--metadata-height',metadata+'px');node.style.setProperty('--die-padding',padding+'px');node.style.setProperty('--entry',Math.max(25,table.clientHeight-y-side)+'px');
+  });y+=side+gap;
+ }
  measure.remove();
- best.cellWidth=Math.min(best.cellWidth,Math.max(best.face+10,200));
- const {columns,cellWidth,face,overheads}=best;
- const totalHeight=overheads.reduce((sum,v)=>sum+v.total+Math.max(face,24),0)+gap*(best.rows-1);
- let y=8+Math.max(0,(height-totalHeight)/2);
- for(let r=0;r<best.rows;r++){
-  const row=nodes.slice(r*columns,(r+1)*columns),h=overheads[r].total+Math.max(face,24),rowWidth=row.length*cellWidth+(row.length-1)*gap;
-  row.forEach((node,c)=>{node.style.left=(8+(width-rowWidth)/2+c*(cellWidth+gap))+'px';node.style.top=y+'px';node.style.width=cellWidth+'px';node.style.height=h+'px';node.style.setProperty('--label-size',labelSize+'px');node.style.setProperty('--face',face+'px');node.style.setProperty('--label-width',Math.min(190,cellWidth-10)+'px');node.style.setProperty('--category-height',overheads[r].category+'px');node.style.setProperty('--entry',Math.max(25,table.clientHeight-y-h)+'px');});
-  y+=h+gap;
- }
 }
-

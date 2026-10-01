@@ -5,3 +5,43 @@
 
 /* Size the actual tiles and feedback together, using rows independently of columns. */
 #grid,.letter-row{gap:var(--gap,4px)}.tile .state-icon{font-size:clamp(9px,calc(var(--tile,42px)*.19),18px)}.wordly-stage{max-width:1200px;grid-template-columns:minmax(120px,.5fr) minmax(0,1fr)}#gridViewport{display:flex;flex-direction:column}#grid{margin-block:auto}
+/* Available visual viewport includes mobile browser chrome and the native keyboard. */
+html:has(body.wordly-page){height:100%;overflow:hidden}
+body.wordly-page{position:fixed;inset:var(--game-top,0px) 0 auto;height:var(--game-vh,100dvh);max-height:var(--game-vh,100dvh);overflow:hidden}
+.wordly-page main{padding-bottom:max(8px,env(safe-area-inset-bottom));gap:5px}
+#playArea{gap:5px}
+#gridViewport{box-shadow:none!important;overflow:hidden;align-items:center;justify-content:center;padding:5px;min-height:0}
+#grid{width:max-content;max-width:100%;margin:0;padding:3px;border-radius:9px;flex:none}
+.native-input{position:absolute;top:40px;left:50%;width:1px;height:1px;opacity:.01;border:0;padding:0;font-size:16px;pointer-events:none}
+#lockedStatus{font-size:12px;line-height:1.2;text-align:center;margin:0;flex:none}
+#status:empty{display:none}#status{min-height:0}
+@media(max-width:600px){
+ .wordly-stage{display:flex;flex-direction:column;gap:3px;justify-content:center}
+ .clue-panel{flex:none}#gridViewport{width:100%;flex:1;justify-content:flex-start}
+ #clue{font-size:clamp(60px,15dvh,112px);line-height:1}#clue img{max-height:112px;max-width:160px}
+ #attemptLabel{margin:2px 0;font-size:12px;line-height:1.2}
+ .keyboard-open #clue{font-size:64px}.keyboard-open #clue img{max-height:64px}
+ .wordly-controls{gap:5px}.wordly-controls button{padding:5px 10px;min-height:38px}
+ #keyboard{padding:3px 1px 0}.keyboard-row{gap:3px;margin-bottom:3px}.keyboard-row button{min-height:36px}
+}
+body.wordly-page[data-short-viewport=true] main{gap:3px;padding-top:4px;padding-bottom:4px}
+body.wordly-page[data-short-viewport=true] #playArea{gap:3px}
+body.wordly-page[data-short-viewport=true] .wordly-stage{gap:3px}
+body.wordly-page[data-short-viewport=true] #clue{font-size:64px;line-height:1}
+body.wordly-page[data-short-viewport=true] #clue img{max-height:64px}
+body.wordly-page[data-short-viewport=true] #attemptLabel{margin:1px;font-size:11px}
+body.wordly-page[data-short-viewport=true] .wordly-controls button{min-height:34px;padding:4px 9px}
+body.wordly-page[data-short-viewport=true] .keyboard-row button{min-height:32px;padding:3px 0}
+body.wordly-page[data-short-viewport=true] #lockedStatus{font-size:11px}
+body.wordly-page[data-tiny-viewport=true] .wordly-stage{display:grid;grid-template-columns:minmax(65px,.32fr) minmax(0,1fr);align-items:center;gap:7px}
+body.wordly-page[data-tiny-viewport=true] #clue{font-size:48px}
+body.wordly-page[data-tiny-viewport=true] #clue img{max-height:48px}
+body.wordly-page[data-tiny-viewport=true] #gridViewport{height:100%;justify-content:center}
+body.wordly-page[data-tiny-viewport=true] .keyboard-row button{min-height:28px;font-size:13px}
+body.wordly-page[data-tiny-viewport=true] .game-header h1{font-size:18px!important}
+body.wordly-page[data-tiny-viewport=true] .wordly-controls button{min-height:30px}
+/* Keep clue, real grid and controls together instead of stretching an empty field. */
+.wordly-page #playArea{justify-content:center}
+.wordly-page .wordly-stage{flex:none;margin:0 auto}
+.wordly-page #gridViewport{flex:none;justify-content:center}
+body.wordly-page{min-height:0!important}
