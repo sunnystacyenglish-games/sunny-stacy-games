@@ -1,3 +1,6 @@
+import {CONTENT_LIMITS} from './activity/limits.js';
+import {activityRegistry} from './activity/catalog.js';
+import {jsonCopy} from './activity/contracts.js';
 import {themes} from './themes.js';
 import {folderRepository,DEFAULT_FOLDER_COLOR} from './folders.js';
 import {setRepository} from './sets.js';
@@ -7,12 +10,17 @@ import {applyTheme} from '../games/dobble/theme-view.js';
 
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;};
 const button=(text,action,className='')=>{const el=node('button',className,text);el.type='button';el.onclick=action;return el;};
+activityRegistry.registerEditor('conceptSet',context=>context.mountConceptSet());
+activityRegistry.registerEditor('builtInPrompts',({host,activity})=>{const note=document.createElement('p');note.className='setup-help';note.textContent='Built-in '+activity.content.data.mode+' prompts. No reusable set is required.';host.append(note);return {read:()=>jsonCopy(activity.content.data)};});
 let serial=0;
 const copyExclusions=map=>new Map([...map].map(([key,ids])=>[key,new Set(ids)]));
 
 // Existing inputs remain the source of truth. Tabs only show/hide panels;
 // exclusions live in this controller, never in a saved set or localStorage.
-export function mountSetupMenu({dialog,form,title,setSelect,themeSelect,sound,getSets,setSets,onContentChange,gameplay=[],contentNotes=[],status=[],footer,committedTheme,state={excluded:new Map()},buttonChoices=[]}){
+export function mountSetupMenu({gameType,activity,editorServices={},registry=activityRegistry,dialog,form,title,setSelect,themeSelect,sound,getSets,setSets,onContentChange,gameplay=[],contentNotes=[],status=[],footer,committedTheme,state={excluded:new Map()},buttonChoices=[]}){
+ gameType??=activity?.gameType||'dobble';if(activity&&activity.gameType!==gameType)throw Error('Activity and editor game do not match.');
+ const contentType=activity?.content.type||'conceptSet',mountContent=registry.editor(gameType,contentType);
+ const customContent=contentType!=='conceptSet';let editor;
  const key='setup-'+ ++serial,originalChildren=[...form.children];let excluded=copyExclusions(state.excluded),folders=[],folderFilter='all',activeTab='content',contentSignature='',committed=false,refreshToken=0;
  const widgets=new Map();dialog.classList.add('unified-setup');
  const heading=node('div','setup-heading');heading.append(title);
@@ -30,9 +38,12 @@ export function mountSetupMenu({dialog,form,title,setSelect,themeSelect,sound,ge
  const summary=node('p','setup-content-summary'),rows=node('div','setup-concepts');rows.setAttribute('aria-label','Selected set concepts');
  const explanation=node('p','setup-help','Untick a concept to leave it out of this game only. Edit opens the saved set in a new tab.');
  const builtinNote=node('p','setup-help','Built-in sets open as editable copies.');
- const originalLabel=setSelect.closest('label');setSelect.hidden=true;setSelect.tabIndex=-1;setSelect.setAttribute('aria-hidden','true');
+ const mountConceptSet=()=>{ const originalLabel=setSelect.closest('label');setSelect.hidden=true;setSelect.tabIndex=-1;setSelect.setAttribute('aria-hidden','true');
  if(originalLabel){originalLabel.hidden=true;panels.content.append(originalLabel);}else panels.content.append(setSelect);
- panels.content.append(library,summary,explanation,builtinNote,rows,...contentNotes.filter(Boolean));
+ panels.content.append(node('h3','','Concepts'),node('p','setup-help','Max. '+CONTENT_LIMITS.conceptSet.concepts+' concepts per set. Older larger sets remain available.'),library,summary,explanation,builtinNote,rows,...contentNotes.filter(Boolean));
+
+ return null;};
+ editor=mountContent({host:panels.content,services:editorServices,activity:activity?jsonCopy(activity):null,mountConceptSet,onChange:()=>onContentChange?.()});
 
  themeSelect.hidden=true;themeSelect.tabIndex=-1;themeSelect.setAttribute('aria-hidden','true');panels.themes.append(themeSelect);
  themeSelect.addEventListener('change',()=>{if(dialog.open)applyTheme(themeSelect.value);});
@@ -50,9 +61,10 @@ export function mountSetupMenu({dialog,form,title,setSelect,themeSelect,sound,ge
  for(const input of panels.gameplay.querySelectorAll('input[type=checkbox]')){input.setAttribute('role','switch');input.closest('label')?.classList.add('setup-toggle');}
  const actions=node('div','setup-footer');for(const note of status.filter(Boolean)){note.classList.add('setup-status');actions.append(note);}actions.append(footer);form.replaceChildren(heading,tabs,body,actions);const legacy=node('div');legacy.hidden=true;for(const child of originalChildren)if(!form.contains(child))legacy.append(child);form.append(legacy);
 
- function sessionSet(set){if(!set)return null;const ids=excluded.get(set.id);return {...set,items:set.items.filter(item=>!ids?.has(item.id))};}
+ function sessionSet(set){if(!set)return null;const ids=excluded.get(set.id);return structuredClone({...set,items:set.items.filter(item=>!ids?.has(item.id))});}
  function contentKey(set){const filtered=sessionSet(set);return JSON.stringify([filtered?.id,filtered?.updatedAt,filtered?.items.map(i=>i.id)]);}
  function syncContent(){
+  if(customContent){editor?.sync?.();return;}
   const sets=getSets(),selected=sets.find(s=>s.id===setSelect.value),signature=JSON.stringify([folderFilter,folders,sets.map(s=>[s.id,s.name,s.folderId,s.updatedAt]),selected?.id,selected?.items.map(i=>[i.id,i.word]),[...(excluded.get(selected?.id)||[])]]);
   if(signature===contentSignature)return;contentSignature=signature;folderList.replaceChildren();setList.replaceChildren();rows.replaceChildren();
   const destinations=[{id:'all',name:'All sets'},{id:'root',name:'My Sets'},...folders];
@@ -79,9 +91,9 @@ export function mountSetupMenu({dialog,form,title,setSelect,themeSelect,sound,ge
   for(const {element:source,label} of buttonChoices){source.hidden=true;const buttons=[...source.querySelectorAll('button')];optionsWidget(source,buttons.map(b=>({value:b.dataset.length||b.dataset.value,label:b.textContent,disabled:b.disabled})),buttons.find(b=>b.getAttribute('aria-pressed')==='true')?.dataset.length||buttons.find(b=>b.getAttribute('aria-pressed')==='true')?.dataset.value,value=>{buttons.find(b=>(b.dataset.length||b.dataset.value)===value)?.click();sync();},label);}
  }
  function sync(){syncContent();syncWidgets();for(const card of themeButtons)card.setAttribute('aria-pressed',String(card.dataset.themeOption===themeSelect.value));}
- async function refreshLibrary(){const token=++refreshToken;try{const [nextFolders,nextSets]=await Promise.all([folderRepository.list(),setRepository.list()]);if(token!==refreshToken||!dialog.isConnected)return;folders=nextFolders;if(!['all','root'].includes(folderFilter)&&!folders.some(f=>f.id===folderFilter))folderFilter='all';const value=setSelect.value;setSets(nextSets);setSelect.replaceChildren(new Option('Choose a content set',''),...nextSets.map(set=>new Option(set.name,set.id)));setSelect.value=nextSets.some(s=>s.id===value)?value:'';setSelect.dispatchEvent(new Event('change',{bubbles:true}));sync();}catch{sync();}}
+ async function refreshLibrary(){if(customContent){editor?.sync?.();return;}const token=++refreshToken;try{const [nextFolders,nextSets]=await Promise.all([folderRepository.list(),setRepository.list()]);if(token!==refreshToken||!dialog.isConnected)return;folders=nextFolders;if(!['all','root'].includes(folderFilter)&&!folders.some(f=>f.id===folderFilter))folderFilter='all';const value=setSelect.value;setSets(nextSets);setSelect.replaceChildren(new Option('Choose a content set',''),...nextSets.map(set=>new Option(set.name,set.id)));setSelect.value=nextSets.some(s=>s.id===value)?value:'';setSelect.dispatchEvent(new Event('change',{bubbles:true}));sync();}catch{sync();}}
  const focusRefresh=()=>{if(dialog.open)refreshLibrary();};addEventListener('focus',focusRefresh);
- dialog.addEventListener('close',()=>{if(!committed)excluded=copyExclusions(state.excluded);applyTheme(committedTheme());});
- form.addEventListener('change',()=>queueMicrotask(sync));activate('content');sync();
- return {sessionSet,contentKey,sync,refreshLibrary,begin(){committed=false;excluded=copyExclusions(state.excluded);contentSignature='';sync();activate(activeTab);refreshLibrary();},commit(){state.excluded=copyExclusions(excluded);committed=true;},destroy(){refreshToken++;removeEventListener('focus',focusRefresh);}};
+ const onClose=()=>{if(dialog.open)return;if(!committed)editor?.cancel?.();if(!committed)excluded=copyExclusions(state.excluded);applyTheme(committedTheme());};dialog.addEventListener('close',onClose);
+ const onFormChange=()=>queueMicrotask(sync);form.addEventListener('change',onFormChange);activate('content');sync();
+ return {readContent(){return customContent?jsonCopy(editor.read()):{setId:setSelect.value};},sessionSet,contentKey,sync,refreshLibrary,begin(){editor?.begin?.();committed=false;excluded=copyExclusions(state.excluded);contentSignature='';sync();activate(activeTab);refreshLibrary();},commit(){editor?.commit?.();state.excluded=copyExclusions(excluded);committed=true;},destroy(){dialog.removeEventListener('close',onClose);form.removeEventListener('change',onFormChange);editor?.destroy?.();refreshToken++;removeEventListener('focus',focusRefresh);}};
 }

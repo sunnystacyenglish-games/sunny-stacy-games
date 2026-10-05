@@ -2,8 +2,8 @@ let pending;
 export function openDatabase(){
   if(!pending)pending=new Promise((resolve,reject)=>{
     if(!globalThis.indexedDB){reject(Error('Browser storage is unavailable. Open this app in a regular browser window.'));return;}
-    const request=indexedDB.open('sunny-stacy-content',2);
-    request.onupgradeneeded=()=>{for(const name of ['sets','folders','setFolders'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'});};
+    const request=indexedDB.open('sunny-stacy-content',3);
+    request.onupgradeneeded=()=>{for(const name of ['sets','folders','setFolders','activities','activityAssets'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'});};
     request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();pending=null;};resolve(db);};
     request.onerror=()=>reject(Error('Cannot open browser storage. Please check your browser privacy settings.'));
     request.onblocked=()=>reject(Error('Close other Sunny & Stacy tabs and try again.'));

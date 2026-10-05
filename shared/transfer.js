@@ -32,5 +32,5 @@ export async function importSet(text,{requestedId}={}){
     if(data.sourceId===requestedId)return setRepository.importMissing(data,requestedId);
     if(!await setRepository.get(data.sourceId))return setRepository.importMissing(data,data.sourceId);
   }
-  return setRepository.create({...data,items:data.items.map(item=>({...item,id:newId()}))});
+  return setRepository.create({...data,items:data.items.map(item=>({...item,id:newId()}))},{legacyImport:true});
 }

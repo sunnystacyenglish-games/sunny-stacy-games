@@ -1,3 +1,4 @@
+import {validateConceptCapacity} from './activity/limits.js';
 import {exampleSets} from '../data/example-sets.js';
 import {transact} from './database.js';
 import {setFolderAssignments,getSetFolderId,folderRepository} from './folders.js';
@@ -18,9 +19,9 @@ export const setRepository={
     return [...structuredClone(builtins),...users.sort((a,b)=>b.updatedAt-a.updatedAt)].map(set=>({...set,folderId:assignments.get(set.id)??null}));
   },
   async get(id){const demo=builtins.find(set=>set.id===id),set=demo?structuredClone(demo):await transact('readonly',store=>store.get(id));if(!set)return null;validateSet(set);return {...set,folderId:await getSetFolderId(id).catch(()=>null)};},
-  async create(data){const set=cleanSet(data,newId());await transact('readwrite',store=>store.add(set));return set;},
+  async create(data,{legacyImport=false}={}){validateConceptCapacity(data,legacyImport?data.items.length:0);const set=cleanSet(data,newId());await transact('readwrite',store=>store.add(set));return set;},
   async importMissing(data,id){if(!/^[A-Za-z0-9_-]{1,120}$/.test(id)||builtins.some(set=>set.id===id))throw Error('Invalid or reserved set ID.');const set=cleanSet(data,id);await transact('readwrite',store=>store.add(set));return set;},
-  async update(id,data){if(builtins.some(set=>set.id===id))throw Error('Make a copy to edit this built-in set.');if(!await this.get(id))throw Error('This set no longer exists. Save a new copy.');const set=cleanSet(data,id);await transact('readwrite',store=>store.put(set));return set;},
-  async duplicate(id){const source=await this.get(id);if(!source)throw Error('Set not found.');const copy=await this.create({...source,name:`${source.name.slice(0,110)} — Copy`,items:source.items.map(item=>({...item,id:newId()}))});if(source.folderId)await folderRepository.move(copy.id,source.folderId);return {...copy,folderId:source.folderId};},
+  async update(id,data){if(builtins.some(set=>set.id===id))throw Error('Make a copy to edit this built-in set.');const previous=await this.get(id);if(!previous)throw Error('This set no longer exists. Save a new copy.');validateConceptCapacity(data,previous.items.length);const set=cleanSet(data,id);await transact('readwrite',store=>store.put(set));return set;},
+  async duplicate(id){const source=await this.get(id);if(!source)throw Error('Set not found.');const copy=await this.create({...source,name:`${source.name.slice(0,110)} — Copy`,items:source.items.map(item=>({...item,id:newId()}))},{legacyImport:true});if(source.folderId)await folderRepository.move(copy.id,source.folderId);return {...copy,folderId:source.folderId};},
   async delete(id){if(builtins.some(set=>set.id===id))throw Error('Built-in sets cannot be deleted.');await transact('readwrite',store=>store.delete(id));}
 };
