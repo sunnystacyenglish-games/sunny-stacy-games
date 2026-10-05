@@ -1,10 +1,10 @@
-# Sunny & Stacy Games — 2.9.0 · Wordly Mastery, native input and square dice
+# Sunny & Stacy Games — 2.12.0 · I Spy / Spot It
 
 Локальное HTML/CSS/JavaScript-приложение. Существующие темы и изображения сохранены; backend не добавлен.
 
 ## Запуск
 
-1. Распакуйте sunny-stacy-games-2.9.0.zip целиком.
+1. Распакуйте sunny-stacy-games-2.12.0.zip целиком.
 2. Откройте терминал в папке sunny-stacy-games, где находится package.json.
 3. С Node.js 18+ выполните `node serve.mjs`. Установка npm-пакетов не требуется.
 4. Откройте http://127.0.0.1:4173. Не закрывайте терминал во время работы.
@@ -157,3 +157,17 @@ Story Dice: один округлый кубик содержит категор
 Wordly: Random и No Repeats / Mastery; реальный text input для клавиатуры; адаптация к visual viewport; точный счётчик закреплённых букв; новый trimmed WAV. Story Dice: квадратные кубики и компактная группа изображения с подписью. Подробности, ограничения и проверки — WORDLY-DICE-2.9.0-REPORT.md.
 
 Mastery охватывает все совместимые слова выбранной длины. Прогресс хранится только до перезагрузки/новой игровой сессии; выбор режима запоминается.
+
+## Architecture 2.10.0
+
+Расширяемые типы контента и редакторы, ActivityDefinition, RuntimeSession, версии схем, JSON и контракты результатов. Concept Sets сохраняют прежний формат. Документация и проверки: ACTIVITY-ARCHITECTURE.md.
+
+
+## Content Editors 2.11.0
+
+My Sets → Content Studio: Bridge, Scene, Sentence Correction и Card Deck внутри общей оболочки. Concept Sets остаются самостоятельными. Лимиты видны сразу; старые большие наборы не обрезаются. Описание моделей, хранения, проверок и ограничений: CONTENT-EDITORS-2.11.0.md.
+
+## I Spy / Spot It
+
+Content Studio → Scene Editor → Save activity → Play I Spy / Spot It. Поддерживаются один или несколько ответов на Target, независимый прогресс одного объекта в разных Targets и автоматический следующий Target. Подробности и проверки: [I-SPY-2.12.0.md](I-SPY-2.12.0.md).
+
