@@ -1,3 +1,5 @@
+import {contentRepository} from '../shared/content-library.js';
+import {refreshContent} from './content-library.js';
 import {chooseSetGame} from '../shared/game-chooser.js';
 import {canPlaySet} from '../shared/content-rules.js';
 import {setRepository} from '../shared/sets.js';
@@ -33,13 +35,13 @@ function nameDialog(title,value='',save,color=DEFAULT_FOLDER_COLOR){
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();input.focus();input.select();
 }
 async function deleteFolder(folder){
- if(!await confirmDialog(`Delete “${folder.name}”?`,'Only the folder will be deleted. All sets inside it will be moved back to My Sets. No sets will be deleted.','Delete folder'))return;
- await folderRepository.delete(folder.id);if(currentFolder===folder.id)await navigate(null);else await refresh();message('Folder deleted. Its sets are in My Sets.');
+ if(!await confirmDialog(`Delete “${folder.name}”?`,'Only the folder will be deleted. All sets inside it will be moved back to My Content. No sets will be deleted.','Delete folder'))return;
+ await folderRepository.delete(folder.id);if(currentFolder===folder.id)await navigate(null);else await refresh();message('Folder deleted. Its sets are in My Content.');
 }
 function folderControls(folder){const edit=title=>nameDialog(title,folder.name,(name,color)=>folderRepository.rename(folder.id,name,color),folder.color);return [button('Rename',()=>edit('Rename folder')),button('Colour',()=>edit('Folder colour')),button('Delete folder',()=>run(()=>deleteFolder(folder)),'danger')];}
 function moveDialog(set){
  const dialog=element('dialog','app-dialog library-dialog'),form=element('form'),label=element('label','','Destination'),select=element('select'),error=element('p','field-error'),actions=element('div','row');
- select.name='destination';select.append(new Option('My Sets',''));for(const folder of folders)select.append(new Option(folder.name,folder.id));select.value=set.folderId??'';label.append(select);error.setAttribute('role','alert');
+ select.name='destination';select.append(new Option('My Content',''));for(const folder of folders)select.append(new Option(folder.name,folder.id));select.value=set.folderId??'';label.append(select);error.setAttribute('role','alert');
  const submit=button('Move',()=>{},'primary');submit.type='submit';actions.append(button('Cancel',()=>dialog.close()),submit);form.append(element('h2','',`Move “${set.name}”`),label,error,actions);dialog.append(form);document.body.append(dialog);
  form.onsubmit=async event=>{event.preventDefault();submit.disabled=true;try{await folderRepository.move(set.id,select.value||null);dialog.close();await refresh();message('Set moved.');}catch(e){error.textContent=e.message;}finally{submit.disabled=false;}};
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();select.focus();
@@ -48,9 +50,9 @@ async function refresh(){
   const [sets,storedFolders]=await Promise.all([setRepository.list(),folderRepository.list().catch(error=>{message(error.message,true);return [];})]);allSets=sets;folders=storedFolders;
   if(currentFolder&&!folders.some(folder=>folder.id===currentFolder)){currentFolder=null;const url=new URL(location.href);url.searchParams.delete('folder');history.replaceState(null,'',url);}
   $('userSets').replaceChildren();$('builtInSets').replaceChildren();$('libraryPath').replaceChildren();$('folderActions').replaceChildren();$('createFolder').hidden=!!currentFolder;$('builtInSection').hidden=!!currentFolder;
-  const root=button('My Sets',()=>run(()=>navigate(null)));root.setAttribute('aria-current',currentFolder?'false':'page');if(currentFolder)dropTarget(root,null);$('libraryPath').append(root);
+  const root=button('My Content',()=>run(()=>navigate(null)));root.setAttribute('aria-current',currentFolder?'false':'page');if(currentFolder)dropTarget(root,null);$('libraryPath').append(root);
   if(currentFolder){const folder=folders.find(folder=>folder.id===currentFolder);$('libraryPath').append(element('span','','›'),element('span','current-folder',folder.name));$('folderActions').append(...folderControls(folder));}
-  $('folderHelp').textContent=currentFolder?'Use Move to… to change folders, or drag a set onto My Sets to return it to the root.':'Drag sets onto a folder, or use Move to… on any set. Drag a folder onto another to place it before that folder.';
+  $('folderHelp').textContent=currentFolder?'Use Move to… to change folders, or drag a set onto My Content to return it to the root.':'Drag sets onto a folder, or use Move to… on any set. Drag a folder onto another to place it before that folder.';
   if(!currentFolder)for(const folder of folders){
    const card=element('article','folder-card');card.setAttribute('aria-label','Folder: '+folder.name);draggable(card,'folder',folder.id);dropTarget(card,folder.id,{reorder:true});
    const open=button('',()=>run(()=>navigate(folder.id)),'folder-open'),icon=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS('http://www.w3.org/2000/svg','path');icon.classList.add('folder-icon');icon.setAttribute('viewBox','0 0 40 34');icon.setAttribute('aria-hidden','true');path.setAttribute('d','M3 2h12l5 5h17a3 3 0 0 1 3 3v21a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Z');icon.append(path);icon.style.color=/^#[0-9a-f]{6}$/i.test(folder.color)?folder.color:DEFAULT_FOLDER_COLOR;open.append(icon,element('span','folder-name',folder.name));
@@ -72,10 +74,10 @@ async function refresh(){
     if(!set.builtin)actions.append(button('Delete',()=>run(async()=>{if(await confirmDialog(`Delete “${set.name}”?`,'This cannot be undone. Export a backup first if you want to keep a copy.')){await setRepository.delete(set.id);await refresh();message('Set deleted.');}}),'danger'));
     card.append(actions);document.querySelector(set.builtin&&!currentFolder?'#builtInSets':'#userSets').append(card);
   }
-  if(!$('userSets').children.length){const empty=element('div','empty-state');empty.append(element('h3','',currentFolder?'This folder is empty.':'No sets yet.'),element('p','muted',currentFolder?'Move a set here from My Sets using Move to… or drag & drop.':'Create your first vocabulary set and use it in Sunny & Stacy games.'));if(!currentFolder){const link=element('a','button primary','+ Create Set');link.href='editor.html';empty.append(link);}$('userSets').append(empty);}
+  if(!$('userSets').children.length){const empty=element('div','empty-state');empty.append(element('h3','',currentFolder?'This folder is empty.':'No sets yet.'),element('p','muted',currentFolder?'Move a set here from My Content using Move to… or drag & drop.':'Create your first vocabulary set and use it in Sunny & Stacy games.'));if(!currentFolder){const link=element('a','button primary','+ Create Set');link.href='editor.html';empty.append(link);}$('userSets').append(empty);}
 }
 async function run(action){try{await action();}catch(error){message(error.message,true);}}
 document.querySelector('#importButton').onclick=()=>document.querySelector('#importFile').click();
 $('createFolder').onclick=()=>nameDialog('Create folder','',(name,color)=>folderRepository.create(name,color));
-document.querySelector('#importFile').onchange=event=>run(async()=>{const file=event.target.files[0];if(!file)return;try{if(file.size>40*1024*1024)throw Error('Choose a JSON file smaller than 40 MB.');const set=await importSet(await file.text());await refresh();message(`Imported “${set.name}” as a new set.`);}finally{event.target.value='';}});
+document.querySelector('#importFile').onchange=event=>run(async()=>{const file=event.target.files[0];if(!file)return;try{if(file.size>40*1024*1024)throw Error('Choose a JSON file smaller than 40 MB.');const text=await file.text();let parsed;try{parsed=JSON.parse(text);}catch{throw Error('Invalid JSON.');}if(parsed.format==='sunny-stacy-activity-bundle'){await contentRepository.import(text);await refreshContent();message('Content imported.');return;}const set=await importSet(text);await refresh();message(`Imported “${set.name}” as a new set.`);}finally{event.target.value='';}});
 run(refresh);
