@@ -67,7 +67,7 @@ export function mountSetupMenu({gameType,activity,editorServices={},registry=act
   if(customContent){editor?.sync?.();return;}
   const sets=getSets(),selected=sets.find(s=>s.id===setSelect.value),signature=JSON.stringify([folderFilter,folders,sets.map(s=>[s.id,s.name,s.folderId,s.updatedAt]),selected?.id,selected?.items.map(i=>[i.id,i.word]),[...(excluded.get(selected?.id)||[])]]);
   if(signature===contentSignature)return;contentSignature=signature;folderList.replaceChildren();setList.replaceChildren();rows.replaceChildren();
-  const destinations=[{id:'all',name:'All sets'},{id:'root',name:'My Sets'},...folders];
+  const destinations=[{id:'all',name:'All sets'},{id:'root',name:'My Content'},...folders];
   for(const folder of destinations){const choice=button(folder.name,()=>{folderFilter=folder.id;syncContent();},'setup-folder');choice.setAttribute('aria-pressed',String(folderFilter===folder.id));choice.dataset.folderId=folder.id;if(!['all','root'].includes(folder.id)){const dot=node('span','folder-dot');dot.style.backgroundColor=/^#[0-9a-f]{6}$/i.test(folder.color)?folder.color:DEFAULT_FOLDER_COLOR;choice.prepend(dot);}folderList.append(choice);}
   const filtered=sets.filter(s=>folderFilter==='all'||(folderFilter==='root'?!s.folderId:s.folderId===folderFilter));
   for(const set of filtered){const choice=button(set.name,()=>{setSelect.value=set.id;setSelect.dispatchEvent(new Event('change',{bubbles:true}));sync();},'setup-set');choice.dataset.setId=set.id;choice.setAttribute('aria-pressed',String(setSelect.value===set.id));setList.append(choice);}

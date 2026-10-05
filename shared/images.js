@@ -29,8 +29,8 @@ export async function prepareItems(items){
     if(item.image.type==='emoji')return {...item,image:item.image.value};
     const src=imageURL(item.image);
     const dimensions=await new Promise((resolve,reject)=>{
-      const image=new Image();const timeout=setTimeout(()=>reject(Error(`Image for “${item.word}” took too long to load. Replace it in My Sets or try again.`)),10000);
-      image.referrerPolicy='no-referrer';image.onload=()=>{clearTimeout(timeout);resolve({width:image.naturalWidth,height:image.naturalHeight});};image.onerror=()=>{clearTimeout(timeout);reject(Error(`Image for “${item.word}” could not load. Replace it in My Sets.`));};image.src=src;
+      const image=new Image();const timeout=setTimeout(()=>reject(Error(`Image for “${item.word}” took too long to load. Replace it in My Content or try again.`)),10000);
+      image.referrerPolicy='no-referrer';image.onload=()=>{clearTimeout(timeout);resolve({width:image.naturalWidth,height:image.naturalHeight});};image.onerror=()=>{clearTimeout(timeout);reject(Error(`Image for “${item.word}” could not load. Replace it in My Content.`));};image.src=src;
     });
     return {...item,image:{src,...dimensions}};
   }));
