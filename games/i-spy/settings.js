@@ -1,0 +1,6 @@
+import {normalizeGameplay} from './activity.js';
+import {THEME_IDS,normalizeTheme} from '../../shared/themes.js';
+const key='sunny-stacy.i-spy.settings.v1';
+export function preferences(search=location.search){let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{};}catch{}const p=new URLSearchParams(search),bool=(name,fallback)=>p.has(name)?!['false','off'].includes(p.get(name)):fallback;const theme=normalizeTheme(p.get('theme')||saved.theme||'notebook');return {...normalizeGameplay({targetOrder:p.get('order')||saved.targetOrder,wrongAnswerSound:bool('wrongSound',saved.wrongAnswerSound),showProgress:bool('progress',saved.showProgress)}),theme:THEME_IDS.includes(theme)?theme:'notebook',sound:bool('sound',saved.sound)!==false,activity:p.has('activity')?p.get('activity'):saved.activity||''};}
+export function savePreferences(value){try{localStorage.setItem(key,JSON.stringify(value));}catch{}}
+export function gameURL(value){const u=new URL('./',import.meta.url);u.search=new URLSearchParams({activity:value.activity,order:value.targetOrder,wrongSound:String(value.wrongAnswerSound),progress:String(value.showProgress),theme:value.theme,sound:String(value.sound)});return u.href;}
