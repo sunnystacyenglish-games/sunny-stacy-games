@@ -1,0 +1,6 @@
+import {normalizeGameplay,PAWN_COLORS,pawnColor} from './activity.js';
+import {normalizeTheme} from '../../shared/themes.js';
+const KEY='sunny-stacy.board-race.settings.v1';
+export function preferences(){let raw={};try{raw=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch{}const params=new URLSearchParams(location.search);for(const key of ['taskMode','display','mode','size','style','special','players','set','theme','sound'])if(params.has(key))raw[key]=params.get(key);const used=new Set();const colors=Array.from({length:4},(_,i)=>{let id=raw.colors?.[i];if(!pawnColor(id)||used.has(pawnColor(id)))id=PAWN_COLORS.find(c=>!used.has(c.hex)).id;used.add(pawnColor(id));return id;});return {...normalizeGameplay(raw),set:typeof raw.set==='string'?raw.set:'animals-1',theme:normalizeTheme(raw.theme||'notebook'),sound:raw.sound!==false&&raw.sound!=='false',names:Array.from({length:4},(_,i)=>typeof raw.names?.[i]==='string'?raw.names[i].slice(0,40):['Sunny','Stacy','Team 3','Team 4'][i]),colors};}
+export function savePreferences(value){try{localStorage.setItem(KEY,JSON.stringify(value));}catch{}}
+export function gameURL(value){const url=new URL('./',import.meta.url);for(const k of ['set','taskMode','mode','size','style','special','players','theme','sound'])url.searchParams.set(k,value[k]);return url.href;}

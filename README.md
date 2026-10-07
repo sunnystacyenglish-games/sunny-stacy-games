@@ -1,10 +1,10 @@
-# Sunny & Stacy Games — 2.13.0 · Content Library & Scene Editor
+# Sunny & Stacy Games — 2.14.2 · Board Race
 
 Локальное HTML/CSS/JavaScript-приложение. Существующие темы и изображения сохранены; backend не добавлен.
 
 ## Запуск
 
-1. Распакуйте sunny-stacy-games-2.13.0.zip целиком.
+1. Распакуйте sunny-stacy-games-2.14.2.zip целиком.
 2. Откройте терминал в папке sunny-stacy-games, где находится package.json.
 3. С Node.js 18+ выполните `node serve.mjs`. Установка npm-пакетов не требуется.
 4. Откройте http://127.0.0.1:4173. Не закрывайте терминал во время работы.
@@ -12,6 +12,8 @@
 Альтернатива: `python -m http.server 4173 --bind 127.0.0.1`. Запуск через file:// не поддерживается. Используйте один адрес: localhost и 127.0.0.1 имеют разные браузерные хранилища.
 
 Новые редакторы, архитектура, проверки и ограничения: [CONTENT-MASTER-2.13.0.md](CONTENT-MASTER-2.13.0.md).
+
+Обновление Board Race, проверенные сценарии и ограничения: [BOARD-RACE-2.14.2.md](BOARD-RACE-2.14.2.md).
 
 ## Основной сценарий
 
