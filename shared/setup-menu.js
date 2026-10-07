@@ -17,7 +17,7 @@ const copyExclusions=map=>new Map([...map].map(([key,ids])=>[key,new Set(ids)]))
 
 // Existing inputs remain the source of truth. Tabs only show/hide panels;
 // exclusions live in this controller, never in a saved set or localStorage.
-export function mountSetupMenu({gameType,activity,editorServices={},registry=activityRegistry,dialog,form,title,setSelect,themeSelect,sound,getSets,setSets,onContentChange,gameplay=[],contentNotes=[],status=[],footer,committedTheme,state={excluded:new Map()},buttonChoices=[]}){
+export function mountSetupMenu({gameType,activity,editorServices={},registry=activityRegistry,dialog,form,title,setSelect,themeSelect,sound,getSets,setSets,onContentChange,gameplay=[],visuals=[],contentNotes=[],status=[],footer,committedTheme,state={excluded:new Map()},buttonChoices=[]}){
  gameType??=activity?.gameType||'dobble';if(activity&&activity.gameType!==gameType)throw Error('Activity and editor game do not match.');
  const contentType=activity?.content.type||'conceptSet',mountContent=registry.editor(gameType,contentType);
  const customContent=contentType!=='conceptSet';let editor;
@@ -57,6 +57,7 @@ export function mountSetupMenu({gameType,activity,editorServices={},registry=act
   }panels.themes.append(grid);
  }
  const soundLabel=sound.closest('label')||node('label');if(!sound.parentNode)soundLabel.append(sound,node('span','','Sound'));soundLabel.classList.add('setup-toggle');sound.setAttribute('role','switch');panels.themes.append(soundLabel);
+ panels.themes.append(...visuals.filter(Boolean));
  panels.gameplay.append(...gameplay.filter(Boolean));
  for(const input of panels.gameplay.querySelectorAll('input[type=checkbox]')){input.setAttribute('role','switch');input.closest('label')?.classList.add('setup-toggle');}
  const actions=node('div','setup-footer');for(const note of status.filter(Boolean)){note.classList.add('setup-status');actions.append(note);}actions.append(footer);form.replaceChildren(heading,tabs,body,actions);const legacy=node('div');legacy.hidden=true;for(const child of originalChildren)if(!form.contains(child))legacy.append(child);form.append(legacy);
@@ -87,7 +88,7 @@ export function mountSetupMenu({gameType,activity,editorServices={},registry=act
   }entry.widget.setValue(value);
  }
  function syncWidgets(){
-  for(const select of panels.gameplay.querySelectorAll('select')){select.hidden=true;select.tabIndex=-1;select.setAttribute('aria-hidden','true');optionsWidget(select,[...select.options].map(o=>({value:o.value,label:o.textContent,disabled:o.disabled||select.disabled})),select.value,value=>{select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));sync();},select.getAttribute('aria-label')||select.closest('label')?.firstChild?.textContent?.trim()||'Choose an option');}
+  for(const select of [...panels.gameplay.querySelectorAll('select'),...visuals.flatMap(el=>[...el.querySelectorAll('select')])]){select.hidden=true;select.tabIndex=-1;select.setAttribute('aria-hidden','true');optionsWidget(select,[...select.options].map(o=>({value:o.value,label:o.textContent,disabled:o.disabled||select.disabled})),select.value,value=>{select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));sync();},select.getAttribute('aria-label')||select.closest('label')?.firstChild?.textContent?.trim()||'Choose an option');}
   for(const {element:source,label} of buttonChoices){source.hidden=true;const buttons=[...source.querySelectorAll('button')];optionsWidget(source,buttons.map(b=>({value:b.dataset.length||b.dataset.value,label:b.textContent,disabled:b.disabled})),buttons.find(b=>b.getAttribute('aria-pressed')==='true')?.dataset.length||buttons.find(b=>b.getAttribute('aria-pressed')==='true')?.dataset.value,value=>{buttons.find(b=>(b.dataset.length||b.dataset.value)===value)?.click();sync();},label);}
  }
  function sync(){syncContent();syncWidgets();for(const card of themeButtons)card.setAttribute('aria-pressed',String(card.dataset.themeOption===themeSelect.value));}

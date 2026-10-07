@@ -1,0 +1,4 @@
+/* Shared with Tic-Tac-Toe: reveal preserves the original layout. */
+#task .concealed-answer{filter:blur(22px);user-select:none;-webkit-user-select:none;pointer-events:none}
+#task #taskText.concealed-answer{filter:blur(14px)}
+#taskImage,#taskText{user-select:none;-webkit-user-select:none}
