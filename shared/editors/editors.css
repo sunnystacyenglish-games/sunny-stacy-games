@@ -16,3 +16,5 @@
 .scene-controlbar{height:88px;align-items:stretch;overflow:visible}.scene-selection{align-content:center;box-sizing:border-box}.scene-selection>strong{flex-basis:100%}.scene-selection>span{align-self:center}.scene-targets>button:last-child{width:100%;z-index:3}
 @media(max-width:800px){.scene-controlbar{height:auto;min-height:55px}.scene-tools-slot{height:auto}}
 
+
+.deck-header{cursor:pointer;font-size:16px;padding:4px;overflow-wrap:anywhere}.deck-header strong{margin:0 12px}.deck-header>span:last-child{font-size:12px;font-weight:normal}.deck-color-dot{display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:middle}details.deck-section:not([open]){display:block}.deck-section[open]>summary{margin-bottom:18px}.deck-card.image-drop-target{outline:3px solid var(--accent);background:var(--soft)}

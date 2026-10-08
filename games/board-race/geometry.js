@@ -54,22 +54,8 @@ export function continuousTrack(options={}){
  return {...route,points,tiles:closed?points:points.slice(1),start:closed?null:points[0],diameter:Math.min(half*2,total/count*.95),segments,trackWidth:half*2,curve:points,layout:'continuous'};
 }
 
-// Style-independent route: reuse the original Winding centerline. Both renderers
-// consume these same ordered positions; only the visual footprint differs.
-export function windingBoard({size=24,mode='race',width=900,height=550}={}){
- const base=generateBoard({size,mode,width,height,layout:'winding',random:()=>.5}),closed=mode==='endless',count=size+(closed?0:1);
- const raw=base.curve,xs=raw.map(p=>p.x),ys=raw.map(p=>p.y),x0=Math.min(...xs),y0=Math.min(...ys),dx=Math.max(...xs)-x0,dy=Math.max(...ys)-y0;
- const pad=Math.min(Math.min(width,height)*.18,Math.sqrt(width*height/count)*.6);
- let curve=raw.map(p=>({x:pad+(p.x-x0)/dx*(width-pad*2),y:pad+(p.y-y0)/dy*(height-pad*2)}));
- // Smooth the original sampled joins without changing Winding topology.
- curve=sample(curve,600,closed);for(let pass=0;pass<30;pass++)curve=curve.map((p,i)=>{if(!closed&&(i===0||i===curve.length-1))return p;const a=curve[(i+curve.length-1)%curve.length],b=curve[(i+1)%curve.length];return {x:(a.x+2*p.x+b.x)/4,y:(a.y+2*p.y+b.y)/4};});
- const src=closed?[...curve,curve[0]]:curve,lens=[0];for(let i=1;i<src.length;i++)lens.push(lens.at(-1)+distance(src[i-1],src[i]));const total=lens.at(-1),step=total/count;
- const frames=curve.map((p,i)=>{const a=curve[closed?(i+curve.length-1)%curve.length:Math.max(0,i-1)],b=curve[closed?(i+1)%curve.length:Math.min(curve.length-1,i+1)],length=distance(a,b)||1,ab=distance(a,p),bc=distance(p,b),cross=Math.abs((p.x-a.x)*(b.y-p.y)-(p.y-a.y)*(b.x-p.x));return {nx:-(b.y-a.y)/length,ny:(b.x-a.x)/length,curvature:ab*bc>1e-8?2*cross/(ab*bc*length):0};});
- const pointAt=d=>{d=closed?(d%total+total)%total:Math.max(0,Math.min(total,d));let j=1;while(j<lens.length-1&&lens[j]<d)j++;const t=(d-lens[j-1])/(lens[j]-lens[j-1]||1),a=frames[j-1],b=frames[j%frames.length],nx=a.nx+(b.nx-a.nx)*t,ny=a.ny+(b.ny-a.ny)*t,n=Math.hypot(nx,ny)||1;return {x:src[j-1].x+(src[j].x-src[j-1].x)*t,y:src[j-1].y+(src[j].y-src[j-1].y)*t,nx:nx/n,ny:ny/n,curvature:Math.max(a.curvature,b.curvature)};};
- const points=Array.from({length:count},(_,i)=>pointAt(step*(i+.5)));let nearest=Infinity;for(let i=0;i<count;i++)for(let j=0;j<i;j++)nearest=Math.min(nearest,distance(points[i],points[j]));
- const diameter=Math.min(nearest/1.5,pad*1.7),half=diameter/2;
- function boundary(d){const p=pointAt(d);let h=Math.min(half,p.curvature>1e-8?.65/p.curvature:half);for(const q of curve){const dx=q.x-p.x,dy=q.y-p.y,dist2=dx*dx+dy*dy,projection=Math.abs(dx*p.nx+dy*p.ny);if(dist2>4&&projection>1e-5)h=Math.min(h,dist2/(2*projection)*.8);}return {left:{x:p.x+p.nx*h,y:p.y+p.ny*h},right:{x:p.x-p.nx*h,y:p.y-p.ny*h}};}
- const ends=Array.from({length:count+1},(_,i)=>boundary(i*step));if(closed)ends[count]=ends[0];
- const segments=Array.from({length:count},(_,i)=>{const n=Math.max(30,Math.ceil(step/2)),samples=Array.from({length:n+1},(_,j)=>j===0?ends[i]:j===n?ends[i+1]:boundary(step*(i+j/n))),polygon=[...samples.map(p=>p.left),...samples.map(p=>p.right).reverse()];return {start:ends[i],end:ends[i+1],polygon,path:'M'+polygon.map(p=>p.x.toFixed(3)+','+p.y.toFixed(3)).join('L')+'Z'};});
- return {points,tiles:closed?points:points.slice(1),start:closed?null:points[0],curve,width,height,diameter,closed,layout:'winding',segments,trackWidth:diameter};
-}
+// Adaptive fitting retains the ordered centerline / offset / sampling contract.
+import {adaptiveBoard,PATH_FAMILIES} from './adaptive-geometry.js';
+export const ROUTE_LAYOUTS=PATH_FAMILIES;
+export function chooseRoute(mode='race',random=Math.random){const families=mode==='endless'?PATH_FAMILIES.filter(x=>x!=='spiral'):PATH_FAMILIES;return families[Math.min(families.length-1,Math.floor(random()*families.length))];}
+export const windingBoard=adaptiveBoard;

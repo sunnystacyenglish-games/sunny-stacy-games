@@ -1,10 +1,11 @@
+import {CONTENT_LIMITS} from '../shared/activity/limits.js';
 import {contentRepository,contentTypes} from '../shared/content-library.js';
 import {activityRegistry} from '../shared/activity/catalog.js';
 import {activityAssets} from '../shared/activity/repository.js';
 import {emptyContent} from '../shared/editors/models.js';
 import {createEntityId} from '../shared/activity/contracts.js';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search);let active,editor,dirty=false,busy=0,revision=0;
-function capacity(){if(!editor)return;const d=editor.read(),type=active.content.type;const summary={scene:()=>`${d.assets.length} / 50 elements · ${d.objects.length} / 50 placed objects · ${d.hotspots?.length||0} / 100 hotspots · ${d.targets.length} / 20 targets`,bridge:()=>`${d.bridges.length} / 20 bridges`,sentenceCorrection:()=>`${d.sentences.length} / 30 sentences`,cardDecks:()=>`${d.decks.length} / 6 decks · ${d.decks.reduce((n,x)=>n+x.cards.length,0)} / 100 cards`};$('capacity').textContent=summary[type]();}
+function capacity(){if(!editor)return;const d=editor.read(),type=active.content.type;const summary={scene:()=>`${d.assets.length} / 50 elements · ${d.objects.length} / 50 placed objects · ${d.hotspots?.length||0} / 100 hotspots · ${d.targets.length} / 20 targets`,bridge:()=>`${d.bridges.length} / 20 bridges`,sentenceCorrection:()=>`${d.sentences.length} / 30 sentences`,cardDecks:()=>`${d.decks.length} / ${CONTENT_LIMITS.cardDecks.decks} decks · ${d.decks.reduce((n,x)=>n+x.cards.length,0)} / 100 cards`};$('capacity').textContent=summary[type]();}
 const changed=()=>{dirty=true;revision++;$('status').textContent='Unsaved changes';queueMicrotask(capacity);};
 async function open(){try{const type=params.get('type');if(type==='conceptSet'){location.replace('../sets/editor.html');return;}if(params.has('id')){active=await contentRepository.get(params.get('id'));if(!active)throw Error('This content is unavailable. Return to My Content.');}else{if(!emptyContent[type])throw Error('Choose a content type in My Content.');const now=new Date().toISOString();active={id:createEntityId(),name:'',gameType:'authoring-'+type,schemaVersion:1,content:{type,version:activityRegistry.content(type).version,data:emptyContent[type]()},themeConfig:{},gameplayConfig:{},metadata:{createdAt:now,updatedAt:now}};}
  document.body.dataset.editor=active.content.type;$('contentName').value=active.name;$('contentType').textContent=contentTypes.find(t=>t[0]===active.content.type)?.[1]||'Content';

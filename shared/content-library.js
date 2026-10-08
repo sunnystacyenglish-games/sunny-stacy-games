@@ -5,7 +5,7 @@ import {validateActivity} from './activity/definition.js';
 const repository=activityRepository(activityRegistry);
 export const contentRepository={
  list:()=>repository.list(),
- async get(id){const raw=await repository.get(id);return raw?validateActivity(raw,activityRegistry):null;},
+ async get(id){const raw=await repository.get(id);return raw?validateActivity(raw,activityRegistry,{previousDeckCount:raw.content?.data?.decks?.length||0}):null;},
  save:value=>repository.save(value),
  export:value=>exportBundle(value,activityRegistry),
  import:text=>importBundle(text,activityRegistry)

@@ -17,7 +17,7 @@ const copyExclusions=map=>new Map([...map].map(([key,ids])=>[key,new Set(ids)]))
 
 // Existing inputs remain the source of truth. Tabs only show/hide panels;
 // exclusions live in this controller, never in a saved set or localStorage.
-export function mountSetupMenu({gameType,activity,editorServices={},registry=activityRegistry,dialog,form,title,setSelect,themeSelect,sound,getSets,setSets,onContentChange,gameplay=[],visuals=[],contentNotes=[],status=[],footer,committedTheme,state={excluded:new Map()},buttonChoices=[]}){
+export function mountSetupMenu({gameType,activity,editorServices={},registry=activityRegistry,dialog,form,title,setSelect,themeSelect,sound,getSets,setSets,onContentChange,gameplay=[],visuals=[],contentNotes=[],status=[],footer,committedTheme,state={excluded:new Map()},buttonChoices=[],extraTabs=[]}){
  gameType??=activity?.gameType||'dobble';if(activity&&activity.gameType!==gameType)throw Error('Activity and editor game do not match.');
  const contentType=activity?.content.type||'conceptSet',mountContent=registry.editor(gameType,contentType);
  const customContent=contentType!=='conceptSet';let editor;
@@ -26,11 +26,11 @@ export function mountSetupMenu({gameType,activity,editorServices={},registry=act
  const heading=node('div','setup-heading');heading.append(title);
  const tabs=node('div','setup-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Game configuration');
  const body=node('div','setup-body'),panels={};
- for(const [id,label] of [['content','Content'],['themes','Themes'],['gameplay','Gameplay']]){
+ for(const [id,label] of [['content','Content'],['themes','Themes'],['gameplay','Gameplay'],...extraTabs.map(t=>[t.id,t.label])]){
   const tab=button(label,()=>activate(id));tab.id=key+'-'+id+'-tab';tab.setAttribute('role','tab');tab.setAttribute('aria-controls',key+'-'+id);tab.dataset.tab=id;tabs.append(tab);
   const panel=node('section','setup-panel');panel.id=key+'-'+id;panel.dataset.panel=id;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',tab.id);panels[id]=panel;body.append(panel);
  }
- tabs.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const entries=[...tabs.children],index=entries.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3;entries[next].click();entries[next].focus();};
+ tabs.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const entries=[...tabs.children],index=entries.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?entries.length-1:(index+(event.key==='ArrowRight'?1:entries.length-1))%entries.length;entries[next].click();entries[next].focus();};
  function activate(id){activeTab=id;for(const tab of tabs.children){const selected=tab.dataset.tab===id;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;}for(const [name,panel] of Object.entries(panels))panel.hidden=name!==id;requestAnimationFrame(syncWidgets);}
 
  const library=node('div','setup-library'),folderPane=node('div','setup-folder-pane'),setPane=node('div','setup-set-pane'),folderList=node('div','setup-folder-list'),setList=node('div','setup-set-list');
@@ -59,6 +59,7 @@ export function mountSetupMenu({gameType,activity,editorServices={},registry=act
  const soundLabel=sound.closest('label')||node('label');if(!sound.parentNode)soundLabel.append(sound,node('span','','Sound'));soundLabel.classList.add('setup-toggle');sound.setAttribute('role','switch');panels.themes.append(soundLabel);
  panels.themes.append(...visuals.filter(Boolean));
  panels.gameplay.append(...gameplay.filter(Boolean));
+ for(const extra of extraTabs)panels[extra.id].append(...extra.nodes);if(extraTabs.length)tabs.style.gridTemplateColumns=`repeat(${3+extraTabs.length},minmax(0,1fr))`;
  for(const input of panels.gameplay.querySelectorAll('input[type=checkbox]')){input.setAttribute('role','switch');input.closest('label')?.classList.add('setup-toggle');}
  const actions=node('div','setup-footer');for(const note of status.filter(Boolean)){note.classList.add('setup-status');actions.append(note);}actions.append(footer);form.replaceChildren(heading,tabs,body,actions);const legacy=node('div');legacy.hidden=true;for(const child of originalChildren)if(!form.contains(child))legacy.append(child);form.append(legacy);
 

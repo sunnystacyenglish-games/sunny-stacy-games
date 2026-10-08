@@ -41,3 +41,59 @@ html:has(.race-page){height:100%;overflow:hidden}body.race-page{position:fixed;i
 @media(max-width:600px){.pawn-options{gap:8px}.pawn-options .colour-swatch{width:25px;height:25px}.pawn-preview{width:30px;height:39px}.pawn-heading{gap:6px}.custom-colour{gap:7px}.race-page #pawns{padding:16px}.pawn-row{gap:6px}}
 .pawn-row{grid-template-columns:minmax(0,1fr) 46px;column-gap:14px;row-gap:8px}.pawn-heading{display:contents}.pawn-heading strong{grid-column:1}.pawn-preview{grid-column:2;grid-row:1/4;align-self:center}.pawn-options,.custom-colour,.pawn-colour-error{grid-column:1}
 @media(max-width:600px){.pawn-row{grid-template-columns:minmax(0,1fr) 30px;column-gap:8px;row-gap:7px}.pawn-options{gap:7px}.pawn-options .colour-swatch{width:23px;height:23px}.custom-colour output{font-size:10px}}
+
+/* Theme palette colours are presentation only, never special-space signals. */
+#board[data-style=circles] .race-tile{background:var(--space-fill,var(--panel))}
+#path .track-segment{fill:var(--space-fill,var(--panel))}
+.race-tile>span,.race-tile>small{color:var(--space-ink,var(--ink))}
+
+/* Delta 1: actual layout expands while keeping header and controls in flow. */
+.race-page main{max-width:none;padding:8px 10px 12px}
+.race-page #playArea{gap:4px}
+#board{background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+#board[data-style=tiles] .race-tile{justify-content:center;padding:0;width:auto;height:auto;min-width:0;gap:1px}
+.race-tile>span{font-size:var(--number-size,20px);font-weight:800;line-height:1.05;opacity:.96}
+.race-tile>small{font-size:clamp(8px,calc(var(--number-size,20px)*.48),12px);line-height:1.05;font-weight:800}
+.race-piece{transition-duration:.48s}
+.race-page #task{box-sizing:border-box;width:min(560px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:20px;overflow:auto}
+.race-page #taskImage{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;max-width:100%;height:clamp(90px,28dvh,230px);min-height:0;min-width:0;font-size:clamp(60px,19dvh,150px);flex:none;margin:12px auto;line-height:1}
+.race-page #taskImage img{display:block;flex:none;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;min-width:0;min-height:0}
+.race-page #taskText{max-width:100%;margin:16px 0;overflow-wrap:anywhere;font-size:clamp(20px,4vw,34px)}
+.race-page #task #reveal{margin:12px auto}
+.race-page #task #taskDone{max-width:100%;white-space:normal}
+@media(max-height:450px){.race-page #task{padding:12px}.race-page #taskImage{height:100px;margin:8px auto}.race-page #taskText{margin:10px 0;font-size:21px}.race-page #task #reveal{margin:8px auto}}
+
+body.race-page #board{box-shadow:none;background:transparent;border:0}
+#path .track-segment.start,#path .track-segment.finish{fill:var(--space-fill)}
+
+@media(max-height:450px) and (min-width:600px){
+ .race-page main{padding:6px 10px}
+ .race-page #playArea{display:grid;grid-template-columns:minmax(0,1fr) 112px;grid-template-rows:auto minmax(0,1fr);gap:4px 8px}
+ .race-page #players{grid-column:1/-1}
+ .race-page #boardArea{grid-column:1;grid-row:2}
+ .race-page .race-controls{grid-column:2;grid-row:2;display:flex;flex-direction:column;justify-content:center;gap:10px;height:100%;min-height:0;width:112px}
+ .race-page #turn{width:112px;height:64px;padding:8px;font-size:12px;line-height:16px;-webkit-line-clamp:3}
+ .race-page #endNow{font-size:12px;padding:7px 10px}
+}
+
+#board[data-style=circles] .race-tile{justify-content:center;padding:0}
+.race-tile>span{opacity:.9}
+.race-decks{position:absolute;z-index:4;pointer-events:none}.race-deck{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-height:0;padding:5px;font-size:clamp(9px,1.5vw,15px);line-height:1.1;overflow-wrap:anywhere;background:var(--deck-color);border:2px solid #ffffffa0;border-radius:9px;box-shadow:3px 4px 0 var(--deck-color),5px 7px 0 #0003;overflow:hidden}.race-deck.required{outline:3px solid var(--ink);outline-offset:5px;animation:deck-pulse 1.2s ease-in-out infinite}@keyframes deck-pulse{50%{filter:brightness(1.16)}}
+.race-page .race-card-dialog{padding:0;width:min(520px,calc(100vw - 28px));max-height:calc(100dvh - 28px);overflow:auto;background:var(--panel);border:4px solid var(--deck-color);transform-style:preserve-3d}.race-card-front{padding:20px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;gap:14px}.race-card-front h2{font-size:20px;margin:0}.race-card-front p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:clamp(20px,4vw,32px);margin:0;max-width:100%}.race-card-front img{display:block;max-width:100%;width:auto;height:auto;max-height:45dvh;object-fit:contain}.race-card-back{position:absolute;inset:0;background:var(--deck-color);transform:rotateY(180deg);backface-visibility:hidden;display:grid;place-items:center;font-size:24px;padding:20px}.setup-deck-row{display:flex;align-items:center;gap:10px;margin:10px 0}.setup-deck-row span{flex:1}.setup-deck-row input[type=color]{width:40px;height:32px;padding:2px}.setup-deck-row input[type=checkbox]{width:20px}
+@media(prefers-reduced-motion:reduce){.race-deck.required{animation:none}}
+.boost-option>span{display:flex;flex-direction:column;gap:4px}.boost-option small{font-size:12px;font-weight:400;color:var(--muted);line-height:1.35}.boost-option{gap:15px;padding:10px 0}
+.boost-choices{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:15px}.boost-choices:empty{display:none}
+.race-card-front,.race-card-back{backface-visibility:visible}.race-card-back{opacity:0}
+
+/* The decorative back must never intercept the front's completion control. */
+.race-card-back{pointer-events:none}
+.race-deck.required{outline:none;box-shadow:3px 4px 0 var(--deck-color),0 0 14px 5px color-mix(in srgb,var(--deck-color) 55%,transparent);animation:none}
+.race-page .race-card-dialog{background:var(--deck-color);color:var(--card-ink);border:9px solid white;border-radius:24px;box-shadow:0 12px 35px #0004;width:min(560px,calc(100vw - 28px));max-height:calc(100dvh - 28px)}
+.race-card-dialog::backdrop{background:#15202b55}
+.race-card-front{position:relative;z-index:1;min-height:min(400px,65dvh);box-sizing:border-box;text-align:center}
+.race-card-front h2{font-size:14px;opacity:.8;font-weight:normal}
+.race-card-front p{flex:1;display:grid;place-items:center;line-height:1.2}
+.race-card-front button{flex-shrink:0;background:white;color:#18232d;border:0}
+.boost-master{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px;border-radius:14px;background:var(--soft);margin-bottom:10px}
+.boost-master span{display:flex;flex-direction:column;gap:5px}.boost-master small{font-weight:normal;font-size:13px}
+.boost-option:has(input:disabled)>span{opacity:.45}

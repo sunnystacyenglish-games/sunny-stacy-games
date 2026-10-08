@@ -1,10 +1,10 @@
-# Sunny & Stacy Games — 2.14.2 · Board Race
+# Sunny & Stacy Games — 2.16.0 · Board Race Cards / Decks
 
 Локальное HTML/CSS/JavaScript-приложение. Существующие темы и изображения сохранены; backend не добавлен.
 
 ## Запуск
 
-1. Распакуйте sunny-stacy-games-2.14.2.zip целиком.
+1. Распакуйте sunny-stacy-games-2.16.0.zip целиком.
 2. Откройте терминал в папке sunny-stacy-games, где находится package.json.
 3. С Node.js 18+ выполните `node serve.mjs`. Установка npm-пакетов не требуется.
 4. Откройте http://127.0.0.1:4173. Не закрывайте терминал во время работы.
@@ -14,6 +14,12 @@
 Новые редакторы, архитектура, проверки и ограничения: [CONTENT-MASTER-2.13.0.md](CONTENT-MASTER-2.13.0.md).
 
 Обновление Board Race, проверенные сценарии и ограничения: [BOARD-RACE-2.14.2.md](BOARD-RACE-2.14.2.md).
+
+Последующие правки поля: [BOARD-RACE-2.14.3.md](BOARD-RACE-2.14.3.md).
+
+Геометрия предыдущего этапа: [BOARD-RACE-2.15.0.md](BOARD-RACE-2.15.0.md).
+
+Текущие изменения Cards / Decks и Delta 4: [BOARD-RACE-2.16.0.md](BOARD-RACE-2.16.0.md).
 
 ## Основной сценарий
 
@@ -176,3 +182,11 @@ My Content → Content Studio: Bridge, Scene, Sentence Correction и Card Deck �
 Content Studio → Scene Editor → Save activity → Play I Spy / Spot It. Поддерживаются один или несколько ответов на Target, независимый прогресс одного объекта в разных Targets и автоматический следующий Target. Подробности и проверки: [I-SPY-2.13.0.md](I-SPY-2.13.0.md).
 
 
+
+## Board Race с колодами
+
+My Content → Create Content → Card Deck → добавьте колоды и карточки → Save.
+Затем Games → Board Race → Content → Cards / Decks → выберите 1–5 колод → настройте Boosts → Play → выберите фишки → Start.
+После остановки фишки нажмите подсвеченную колоду. Done / Continue находится внутри карточки. Следующий ход начинается после её возврата.
+
+Новые колоды: максимум 5; 30 карточек в одной колоде и 100 во всём документе. Старые сохранённые документы с шестью колодами можно редактировать без удаления данных.
