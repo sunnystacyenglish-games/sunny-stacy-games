@@ -18,6 +18,7 @@ export class SpySession{
  objectFound(id){return this.target.answers.some(a=>a.type==='object'&&a.sceneObjectId===id&&this.found.has(a.id));}
  hit(objectId,x,y){if(this.sessionComplete||this.isTransitioning)return {kind:'ignored'};const objectAnswer=this.target.answers.find(a=>a.type==='object'&&a.sceneObjectId===objectId);let answer=objectAnswer;
  if(!answer&&Number.isFinite(x)&&Number.isFinite(y)&&x>=0&&x<=1&&y>=0&&y<=1){const matches=this.target.answers.filter(a=>{if(a.type!=='hotspot')return false;const h=this.scene.hotspots.find(h=>h.id===a.hotspotId);return x>=h.x&&x<=h.x+h.width&&y>=h.y&&y<=h.y+h.height;});answer=matches.find(a=>!this.found.has(a.id))||matches[0];}
- if(!answer)return {kind:objectId===undefined&&!Number.isFinite(x)?'ignored':'wrong'};if(this.found.has(answer.id))return {kind:'already-found'};this.found.add(answer.id);const completed=this.found.size===this.target.answers.length;if(completed)this.isTransitioning=true;return {kind:'correct',completed,answer};}
+ if(!answer)return {kind:objectId===undefined&&!Number.isFinite(x)?'ignored':'wrong'};return this.confirmAnswer(answer.id);}
+ confirmAnswer(id){if(this.sessionComplete||this.isTransitioning)return {kind:'ignored'};const answer=this.target.answers.find(a=>a.id===id);if(!answer)return {kind:'wrong'};if(this.found.has(answer.id))return {kind:'already-found'};this.found.add(answer.id);const completed=this.found.size===this.target.answers.length;if(completed)this.isTransitioning=true;return {kind:'correct',completed,answer};}
  advance(){if(!this.isTransitioning||this.sessionComplete)return false;this.isTransitioning=false;if(this.activeTargetIndex+1===this.targetOrder.length){this.sessionComplete=true;return true;}this.activeTargetIndex++;return true;}
 }

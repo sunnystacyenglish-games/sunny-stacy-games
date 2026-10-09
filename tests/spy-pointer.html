@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Magnifier pointer regression</title>
+<link rel="stylesheet" href="../games/i-spy/game.css">
+<button id="run">Run pointer checks</button><pre></pre>
+<div id="scene" style="width:600px;height:400px;background:repeating-linear-gradient(45deg,#dae8bc 0 20px,#c1dba4 20px 40px)"><img id="sceneBackground" src="fixtures/background-1920.png"></div>
+<script type="module">
+import {mountMagnifier} from '../games/i-spy/magnifier.js';
+const scene=document.querySelector('#scene'),out=document.querySelector('pre');let confirms=0;
+const lens=mountMagnifier(scene,{enabled:()=>true,confirm:()=>{confirms++;out.textContent='Confirmations: '+confirms;}});scene.onclick=e=>lens.inspect(e);
+document.querySelector('#run').onclick=async()=>{try{
+const check=(v,m)=>{if(!v)throw Error(m);};
+const click=(x,y)=>{const r=scene.getBoundingClientRect();scene.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:1,clientX:r.left+x,clientY:r.top+y}));};
+const original=scene.setPointerCapture;scene.setPointerCapture=()=>{};
+for(const pointerType of ['mouse','touch']){
+lens.reset();confirms=0;click(180,180);check(confirms===0,'First click');
+const send=(type,x,y)=>{const r=scene.getBoundingClientRect();scene.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:1,isPrimary:true,pointerType,button:0,clientX:r.left+x,clientY:r.top+y}));};
+send('pointerdown',190,185);send('pointermove',310,235);send('pointerup',310,235);click(310,235);
+check(confirms===0,'Drag release must not confirm '+pointerType);const l=scene.querySelector('.spy-lens');check(Math.abs(parseFloat(l.style.left)-300)<1&&Math.abs(parseFloat(l.style.top)-230)<1,'Continuous offset without snap');
+send('pointerdown',300,230);send('pointerup',300,230);click(300,230);check(confirms===1,'Next deliberate click confirms');
+send('pointerdown',300,230);send('pointermove',330,260);send('pointercancel',330,260);click(330,260);check(confirms===1,'Cancelled drag neutral');
+}
+scene.setPointerCapture=original;out.textContent='PASS mouse/touch pointer streams: offset, move, drag suppression, next confirmation and cancel';
+}catch(e){out.textContent='FAIL '+e.stack;console.error(e);}};
+</script>
+
