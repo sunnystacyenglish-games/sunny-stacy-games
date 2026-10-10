@@ -1,0 +1,44 @@
+{
+  "updates": [
+    {
+      "id": "ispy-usability-fixes",
+      "date": "2026-10-10",
+      "area": "I Spy / Spot It",
+      "type": "fixed",
+      "title": "I Spy usability improvements",
+      "description": "Fixed magnifier dragging, enlarged the scene editing workspace, and improved direct Scene Editor navigation."
+    }
+  ],
+  "knownIssues": [
+    {
+      "id": "board-race-dark-theme-contrast",
+      "area": "Board Race",
+      "status": "known",
+      "title": "Dark theme contrast",
+      "description": "Some board surfaces and player names are difficult to read in dark mode."
+    }
+  ],
+  "roadmap": [
+    {
+      "id": "content-studio-ux",
+      "area": "Content Studio",
+      "status": "planned",
+      "title": "Simpler content editors",
+      "description": "A more compact, consistent experience across content editors."
+    },
+    {
+      "id": "unified-library",
+      "area": "My Content",
+      "status": "planned",
+      "title": "Unified content library",
+      "description": "Shared folders, filtering, sorting and consistent content cards."
+    },
+    {
+      "id": "chomp",
+      "area": "CHOMP",
+      "status": "planned",
+      "title": "CHOMP game",
+      "description": "Developing character jaw animations and gameplay."
+    }
+  ]
+}

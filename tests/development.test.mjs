@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';import {publishedUpdates,activeIssues,roadmapItems,validDate} from '../shared/development-data.js';
+const data={updates:[{id:'old',published:true,verified:true,date:'2026-01-01'},{id:'new',published:true,verified:true,date:'2026-02-01'},{id:'unknown',published:true,verified:true},{id:'draft',published:false,verified:true,date:'2026-03-01'},{id:'unchecked',published:true,verified:false}],knownIssues:['Known','In Progress','Fix Pending Verification','Fixed','invented'].map(status=>({status})),roadmap:[{status:'In Progress'},{status:'Coming Next'}]};
+assert.deepEqual(publishedUpdates(data).map(x=>x.id),['new','old','unknown']);assert.equal(activeIssues(data).length,3);assert.equal(publishedUpdates({knownIssues:[{status:'Fixed'}]}).length,0);assert.equal(roadmapItems(data,'Coming Next').length,1);assert.equal(validDate('2026-02-31'),false);assert.equal(validDate(undefined),false);assert.equal(validDate('2026-10-10'),true);assert.deepEqual(publishedUpdates({}),[]);console.log('PASS manual publication gates, date ordering, unknown dates, active statuses, no automatic releases and roadmap categories');
+import {normalizeFeed} from '../shared/development-data.js';
+import {readFileSync} from 'node:fs';
+const manual=normalizeFeed(JSON.parse(readFileSync(new URL('../updates.json',import.meta.url))));
+assert.equal(publishedUpdates(manual).length,1);assert.equal(activeIssues(manual)[0].status,'Known');assert.equal(roadmapItems(manual,'Coming Next').length,3);
+assert.equal(publishedUpdates(normalizeFeed({updates:[{id:'draft',title:'Draft',type:'new',published:false}]})).length,0);
+assert.throws(()=>normalizeFeed({updates:'bad'}));assert.throws(()=>normalizeFeed({knownIssues:[{id:'x',title:'x',status:'unknown'}]}));assert.throws(()=>normalizeFeed({updates:[{id:'x',title:'x',type:'new'},{id:'x',title:'y',type:'new'}]}));
+console.log('PASS user JSON, lowercase status mapping, explicit drafts and malformed data');
