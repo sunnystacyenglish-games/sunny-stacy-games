@@ -1,29 +1,36 @@
-import {contentRepository} from '../shared/content-library.js';
-import {refreshContent} from './content-library.js';
-import {chooseSetGame} from '../shared/game-chooser.js';
-import {canPlaySet} from '../shared/content-rules.js';
+import {contentRepository,contentTypes} from '../shared/content-library.js';
 import {setRepository} from '../shared/sets.js';
-import {folderRepository,FOLDER_COLORS,DEFAULT_FOLDER_COLOR} from '../shared/folders.js';
-import {showImage} from '../shared/images.js';
+import {folderRepository,activityFolderAssignments,FOLDER_COLORS,DEFAULT_FOLDER_COLOR} from '../shared/folders.js';
 import {exportSet,importSet} from '../shared/transfer.js';
 import {element,button,message,confirmDialog} from '../shared/ui.js';
-let currentFolder=new URLSearchParams(location.search).get('folder')||null,folders=[],allSets=[],dragged=null;
+import {LIBRARY_TYPES,libraryItems,selectLibrary,sortLibrary,contentStats} from '../shared/library-model.js';
+import {renderPreview} from './library-preview.js';
 const $=id=>document.getElementById(id);
+let currentFolder=new URLSearchParams(location.search).get('folder')||null,folders=[],items=[],dragged=null,refreshGeneration=0;
 const pointer=()=>matchMedia('(any-pointer: fine)').matches;
-function navigate(folderId){currentFolder=folderId;const url=new URL(location.href);if(folderId)url.searchParams.set('folder',folderId);else url.searchParams.delete('folder');history.pushState(null,'',url);return refresh();}
-addEventListener('popstate',()=>{currentFolder=new URLSearchParams(location.search).get('folder')||null;run(refresh);});
-function clearDrag(){document.querySelectorAll('.dragging,.drop-target').forEach(node=>node.classList.remove('dragging','drop-target'));}
-function draggable(node,type,id){
- node.draggable=pointer();node.dataset[type+'Id']=id;
- node.addEventListener('dragstart',event=>{if(!pointer()||event.target.closest('button,a')){event.preventDefault();return;}dragged={type,id};event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('application/x-sunny-library',JSON.stringify(dragged));node.classList.add('dragging');});
- node.addEventListener('dragend',()=>{clearDrag();dragged=null;});
+async function run(action){try{await action();}catch(error){message(error.message,true);}}
+function navigate(id){currentFolder=id;const url=new URL(location.href);if(id)url.searchParams.set('folder',id);else url.searchParams.delete('folder');history.pushState(null,'',url);draw();}
+addEventListener('popstate',()=>{currentFolder=new URLSearchParams(location.search).get('folder')||null;draw();});
+function moveItem(item,folderId){return item.kind==='set'?folderRepository.move(item.id,folderId):folderRepository.moveActivity(item.id,folderId);}
+function clearDrag(){document.querySelectorAll('.dragging,.drop-target').forEach(n=>n.classList.remove('dragging','drop-target'));}
+function draggable(node,type,id){node.draggable=pointer();node.addEventListener('dragstart',e=>{if(!pointer()||e.target.closest('.library-menu')){e.preventDefault();return;}dragged={type,id};e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('application/x-sunny-library',JSON.stringify(dragged));node.classList.add('dragging');});node.addEventListener('dragend',()=>{clearDrag();dragged=null;});}
+function dropTarget(node,folderId,{reorder=false}={}){const valid=()=>dragged&&(dragged.type==='content'?items.some(i=>i.key===dragged.id&&i.folderId!==folderId):reorder&&dragged.type==='folder'&&dragged.id!==folderId);node.addEventListener('dragover',e=>{if(!valid())return;e.preventDefault();e.dataTransfer.dropEffect='move';clearDrag();node.classList.add('drop-target');});node.addEventListener('dragleave',e=>{if(!node.contains(e.relatedTarget))node.classList.remove('drop-target');});node.addEventListener('drop',e=>{if(!valid())return;e.preventDefault();e.stopPropagation();const source=dragged;dragged=null;clearDrag();run(async()=>{if(source.type==='content'){await moveItem(items.find(i=>i.key===source.id),folderId);message('Content moved.');}else{await folderRepository.reorder(source.id,folderId);manualFolderOrder=true;}await refresh();});});}
+// Manual folder drag ordering is retained until the user chooses a sort method.
+let manualFolderOrder=false;
+function actionMenu(label,actions){const menu=element('details','library-menu'),summary=element('summary','','⋯'),panel=element('div','library-menu-panel');summary.setAttribute('aria-label','Actions for '+label);summary.setAttribute('aria-haspopup','true');panel.append(...actions);menu.append(summary,panel);menu.addEventListener('toggle',()=>{summary.setAttribute('aria-expanded',String(menu.open));if(menu.open){document.querySelectorAll('.library-menu[open]').forEach(other=>{if(other!==menu)other.open=false;});panel.classList.remove('above');if(panel.getBoundingClientRect().bottom>innerHeight-12&&summary.getBoundingClientRect().top>panel.offsetHeight+12)panel.classList.add('above');}});menu.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('button,a'))menu.open=false;});menu.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.open=false;summary.focus();e.preventDefault();}if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();menu.open=true;const controls=[...panel.querySelectorAll('a,button')],index=controls.indexOf(document.activeElement);controls[e.key==='Home'?0:e.key==='End'?controls.length-1:(index+(e.key==='ArrowUp'?-1:1)+controls.length)%controls.length]?.focus();}});return menu;}
+addEventListener('click',e=>{document.querySelectorAll('.library-menu[open]').forEach(menu=>{if(!menu.contains(e.target))menu.open=false;});});
+function editURL(item){return item.kind==='set'?`editor.html?id=${encodeURIComponent(item.id)}`:`../content/editor.html?id=${encodeURIComponent(item.id)}`;}
+function download(text,name){const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),link=element('a');link.href=url;link.download=(name.replace(/[^a-zA-Z0-9_-]/g,'_')||'content')+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function contentActions(item){const edit=element('a','',item.record.builtin?'✎ Edit a copy':'✎ Edit');edit.href=editURL(item);const actions=[edit,button('⧉ Duplicate',()=>run(async()=>{if(item.kind==='set')await setRepository.duplicate(item.id);else await contentRepository.duplicate(item.id);await refresh();message('Copy created.');})),button('↓ Export JSON',()=>run(async()=>{download(await (item.kind==='set'?exportSet(item.record):contentRepository.export(item.record)),item.name);message('JSON exported, including uploaded images.');})),button('▱ Move to…',()=>moveDialog(item))];if(!item.record.builtin)actions.push(button('⌫ Delete',()=>run(async()=>{if(!await confirmDialog(`Delete “${item.name}”?`,'This cannot be undone. Other content and shared images will be kept.'))return;await (item.kind==='set'?setRepository.delete(item.id):contentRepository.delete(item.id));await refresh();message('Content deleted.');}),'danger'));return actions;}
+const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){observer.unobserve(entry.target);const item=entry.target.libraryItem;renderPreview(entry.target,item).catch(()=>{entry.target.textContent='Preview unavailable';});}},{rootMargin:'200px'});
+function contentCard(item){const card=element('article','library-card');card.dataset.key=item.key;card.dataset.type=item.type;card.setAttribute('aria-label',item.name);draggable(card,'content',item.key);const link=element('a','library-card-link');link.href=editURL(item);link.draggable=false;const preview=element('div','library-preview');preview.libraryItem=item;observer.observe(preview);const type=LIBRARY_TYPES.find(t=>t[0]===item.type)?.[1]||'Content';link.append(preview,element('h3','',item.name),element('p','library-type',type),element('p','meta',contentStats(item)+(item.record.builtin?' · Built-in':'')));card.append(link,actionMenu(item.name,contentActions(item)));return card;}
+function folderCard(folder){const card=element('article','library-card library-folder');card.dataset.folderId=folder.id;card.setAttribute('aria-label','Folder: '+folder.name);draggable(card,'folder',folder.id);dropTarget(card,folder.id,{reorder:true});const open=button('',()=>navigate(folder.id),'library-card-link'),preview=element('div','library-preview'),icon=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS('http://www.w3.org/2000/svg','path');icon.setAttribute('viewBox','0 0 40 34');icon.setAttribute('aria-hidden','true');path.setAttribute('d','M3 2h12l5 5h17a3 3 0 0 1 3 3v21a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Z');icon.append(path);icon.style.color=/^#[0-9a-f]{6}$/i.test(folder.color)?folder.color:DEFAULT_FOLDER_COLOR;preview.append(icon);const count=items.filter(i=>i.folderId===folder.id).length;open.append(preview,element('h3','',folder.name),element('p','library-type','Folder'),element('p','meta',`${count} content ${count===1?'set':'sets'}`));card.append(open,actionMenu(folder.name,[button('▱ Open',()=>navigate(folder.id)),...folderControls(folder)]));return card;}
+function draw(){observer.disconnect();if(currentFolder&&!folders.some(f=>f.id===currentFolder)){currentFolder=null;const url=new URL(location.href);url.searchParams.delete('folder');history.replaceState(null,'',url);}$('libraryGrid').replaceChildren();$('libraryPath').replaceChildren();const root=button('My Content',()=>navigate(null));root.setAttribute('aria-current',currentFolder?'false':'page');dropTarget(root,null);$('libraryPath').append(root);$('createFolder').hidden=!!currentFolder;if(currentFolder){const folder=folders.find(f=>f.id===currentFolder);$('libraryPath').append(element('span','','›'),element('span','current-folder',folder.name),actionMenu(folder.name,folderControls(folder)));}
+ $('searchScope').textContent=currentFolder?'Search in this folder':'Search in My Content root';
+ const content=selectLibrary(items,{folderId:currentFolder,type:$('typeFilter').value,search:$('search').value,sort:$('sort').value,folders});if(!currentFolder)for(const folder of manualFolderOrder?folders:sortLibrary(folders,$('sort').value))$('libraryGrid').append(folderCard(folder));for(const item of content)$('libraryGrid').append(contentCard(item));
+ $('emptyLibrary').hidden=content.length>0;$('emptyLibrary').textContent=$('search').value.trim()||$('typeFilter').value?'No matching content. Clear search or choose All Types.':currentFolder?'This folder is empty. Use Move to… or drag content into it.':'No content yet. Use + Create to add your first materials.';
 }
-function dropTarget(node,folderId,{reorder=false}={}){
- const valid=()=>dragged&&(dragged.type==='set'?allSets.some(set=>set.id===dragged.id&&(set.folderId??null)!==folderId):reorder&&dragged.type==='folder'&&dragged.id!==folderId);
- node.addEventListener('dragover',event=>{if(!valid())return;event.preventDefault();event.dataTransfer.dropEffect='move';clearDrag();node.classList.add('drop-target');});
- node.addEventListener('dragleave',event=>{if(!node.contains(event.relatedTarget))node.classList.remove('drop-target');});
- node.addEventListener('drop',event=>{if(!valid())return;event.preventDefault();event.stopPropagation();const source=dragged;dragged=null;clearDrag();run(async()=>{if(source.type==='set'){await folderRepository.move(source.id,folderId);message('Set moved.');}else await folderRepository.reorder(source.id,folderId);await refresh();});});
-}
+async function refresh(){const generation=++refreshGeneration;const [sets,activities,storedFolders,assignments]=await Promise.all([setRepository.list(),contentRepository.list(),folderRepository.list(),activityFolderAssignments()]);if(generation!==refreshGeneration)return;folders=storedFolders;items=libraryItems(sets,activities,assignments);if(setRepository.warnings.length)message(setRepository.warnings.join('\n'),true);draw();}
 function nameDialog(title,value='',save,color=DEFAULT_FOLDER_COLOR){
  const dialog=element('dialog','app-dialog library-dialog'),form=element('form'),label=element('label','','Folder name'),input=element('input'),error=element('p','field-error'),actions=element('div','row');
  input.value=value;input.required=true;input.maxLength=120;input.name='folderName';label.append(input);error.setAttribute('role','alert');
@@ -35,49 +42,24 @@ function nameDialog(title,value='',save,color=DEFAULT_FOLDER_COLOR){
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();input.focus();input.select();
 }
 async function deleteFolder(folder){
- if(!await confirmDialog(`Delete “${folder.name}”?`,'Only the folder will be deleted. All sets inside it will be moved back to My Content. No sets will be deleted.','Delete folder'))return;
- await folderRepository.delete(folder.id);if(currentFolder===folder.id)await navigate(null);else await refresh();message('Folder deleted. Its sets are in My Content.');
+ if(!await confirmDialog(`Delete “${folder.name}”?`,'Only the folder will be deleted. All content inside it will be moved back to My Content. No content will be deleted.','Delete folder'))return;
+ await folderRepository.delete(folder.id);if(currentFolder===folder.id)await navigate(null);else await refresh();message('Folder deleted. Its contents are in My Content.');
 }
-function folderControls(folder){const edit=title=>nameDialog(title,folder.name,(name,color)=>folderRepository.rename(folder.id,name,color),folder.color);return [button('Rename',()=>edit('Rename folder')),button('Colour',()=>edit('Folder colour')),button('Delete folder',()=>run(()=>deleteFolder(folder)),'danger')];}
+function folderControls(folder){const edit=title=>nameDialog(title,folder.name,(name,color)=>folderRepository.rename(folder.id,name,color),folder.color);return [button('✎ Rename',()=>edit('Rename folder')),button('◉ Change Color',()=>edit('Folder colour')),button('⌫ Delete Folder',()=>run(()=>deleteFolder(folder)),'danger')];}
 function moveDialog(set){
  const dialog=element('dialog','app-dialog library-dialog'),form=element('form'),label=element('label','','Destination'),select=element('select'),error=element('p','field-error'),actions=element('div','row');
  select.name='destination';select.append(new Option('My Content',''));for(const folder of folders)select.append(new Option(folder.name,folder.id));select.value=set.folderId??'';label.append(select);error.setAttribute('role','alert');
  const submit=button('Move',()=>{},'primary');submit.type='submit';actions.append(button('Cancel',()=>dialog.close()),submit);form.append(element('h2','',`Move “${set.name}”`),label,error,actions);dialog.append(form);document.body.append(dialog);
- form.onsubmit=async event=>{event.preventDefault();submit.disabled=true;try{await folderRepository.move(set.id,select.value||null);dialog.close();await refresh();message('Set moved.');}catch(e){error.textContent=e.message;}finally{submit.disabled=false;}};
+ form.onsubmit=async event=>{event.preventDefault();submit.disabled=true;try{await moveItem(set,select.value||null);dialog.close();await refresh();message('Set moved.');}catch(e){error.textContent=e.message;}finally{submit.disabled=false;}};
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();select.focus();
 }
-async function refresh(){
-  const [sets,storedFolders]=await Promise.all([setRepository.list(),folderRepository.list().catch(error=>{message(error.message,true);return [];})]);allSets=sets;folders=storedFolders;
-  if(currentFolder&&!folders.some(folder=>folder.id===currentFolder)){currentFolder=null;const url=new URL(location.href);url.searchParams.delete('folder');history.replaceState(null,'',url);}
-  $('userSets').replaceChildren();$('builtInSets').replaceChildren();$('libraryPath').replaceChildren();$('folderActions').replaceChildren();$('createFolder').hidden=!!currentFolder;$('builtInSection').hidden=!!currentFolder;
-  const root=button('My Content',()=>run(()=>navigate(null)));root.setAttribute('aria-current',currentFolder?'false':'page');if(currentFolder)dropTarget(root,null);$('libraryPath').append(root);
-  if(currentFolder){const folder=folders.find(folder=>folder.id===currentFolder);$('libraryPath').append(element('span','','›'),element('span','current-folder',folder.name));$('folderActions').append(...folderControls(folder));}
-  $('folderHelp').textContent=currentFolder?'Use Move to… to change folders, or drag a set onto My Content to return it to the root.':'Drag sets onto a folder, or use Move to… on any set. Drag a folder onto another to place it before that folder.';
-  if(!currentFolder)for(const folder of folders){
-   const card=element('article','folder-card');card.setAttribute('aria-label','Folder: '+folder.name);draggable(card,'folder',folder.id);dropTarget(card,folder.id,{reorder:true});
-   const open=button('',()=>run(()=>navigate(folder.id)),'folder-open'),icon=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS('http://www.w3.org/2000/svg','path');icon.classList.add('folder-icon');icon.setAttribute('viewBox','0 0 40 34');icon.setAttribute('aria-hidden','true');path.setAttribute('d','M3 2h12l5 5h17a3 3 0 0 1 3 3v21a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Z');icon.append(path);icon.style.color=/^#[0-9a-f]{6}$/i.test(folder.color)?folder.color:DEFAULT_FOLDER_COLOR;open.append(icon,element('span','folder-name',folder.name));
-   const count=sets.filter(set=>set.folderId===folder.id).length;card.append(open,element('p','meta',`${count} ${count===1?'set':'sets'}`));const actions=element('div','row');actions.append(...folderControls(folder));card.append(actions);$('userSets').append(card);
-  }
-  if(setRepository.warnings.length)message(setRepository.warnings.join('\n'),true);
-  for(const set of sets){
-    const assigned=folders.some(folder=>folder.id===set.folderId)?set.folderId:null;if(assigned!==currentFolder)continue;
-    const card=element('article','set-card');card.setAttribute('aria-label',set.name);
-    draggable(card,'set',set.id);
-    const preview=element('div','previews');for(const item of set.items.slice(0,4)){const host=element('div','preview');showImage(host,item.image,item.word);preview.append(host);}
-    card.append(preview,element('h3','',set.name),element('p','meta',`${set.items.length} items${set.builtin?' · Built-in':''}`));
-    const actions=element('div','row');const edit=element('a','button',set.builtin?'Edit a copy':'Edit');edit.href=`editor.html?id=${encodeURIComponent(set.id)}`;
-    const play=button('Play',()=>chooseSetGame(set),'primary');play.disabled=!canPlaySet(set);if(play.disabled)card.append(element('p','minimum-note','Minimum: 5 valid items. Edit this set to add more.'));
-    actions.append(edit,play,button('Duplicate',()=>run(async()=>{await setRepository.duplicate(set.id);await refresh();message('Copy created.');})),button('Export JSON',()=>run(async()=>{
-      const json=await exportSet(set);const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));const link=element('a');link.href=url;link.download=`${set.name.replace(/[^a-zA-Z0-9_-]/g,'_')}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message('JSON exported, including uploaded images.');
-    })));
-    actions.append(button('Move to…',()=>moveDialog(set)));
-    if(!set.builtin)actions.append(button('Delete',()=>run(async()=>{if(await confirmDialog(`Delete “${set.name}”?`,'This cannot be undone. Export a backup first if you want to keep a copy.')){await setRepository.delete(set.id);await refresh();message('Set deleted.');}}),'danger'));
-    card.append(actions);document.querySelector(set.builtin&&!currentFolder?'#builtInSets':'#userSets').append(card);
-  }
-  if(!$('userSets').children.length){const empty=element('div','empty-state');empty.append(element('h3','',currentFolder?'This folder is empty.':'No sets yet.'),element('p','muted',currentFolder?'Move a set here from My Content using Move to… or drag & drop.':'Create your first vocabulary set and use it in Sunny & Stacy games.'));if(!currentFolder){const link=element('a','button primary','+ Create Set');link.href='editor.html';empty.append(link);}$('userSets').append(empty);}
-}
-async function run(action){try{await action();}catch(error){message(error.message,true);}}
-document.querySelector('#importButton').onclick=()=>document.querySelector('#importFile').click();
+
+for(const [type,label] of LIBRARY_TYPES)$('typeFilter').append(new Option(label,type));
+$('search').oninput=draw;$('typeFilter').onchange=draw;$('sort').onchange=()=>{manualFolderOrder=false;draw();};
 $('createFolder').onclick=()=>nameDialog('Create folder','',(name,color)=>folderRepository.create(name,color));
-document.querySelector('#importFile').onchange=event=>run(async()=>{const file=event.target.files[0];if(!file)return;try{if(file.size>40*1024*1024)throw Error('Choose a JSON file smaller than 40 MB.');const text=await file.text();let parsed;try{parsed=JSON.parse(text);}catch{throw Error('Invalid JSON.');}if(parsed.format==='sunny-stacy-activity-bundle'){await contentRepository.import(text);await refreshContent();message('Content imported.');return;}const set=await importSet(text);await refresh();message(`Imported “${set.name}” as a new set.`);}finally{event.target.value='';}});
+$('importButton').onclick=()=>$('importFile').click();
+$('importFile').onchange=e=>run(async()=>{const file=e.target.files[0];if(!file)return;try{if(file.size>40*1024*1024)throw Error('Choose a JSON file smaller than 40 MB.');const text=await file.text();let parsed;try{parsed=JSON.parse(text);}catch{throw Error('Invalid JSON.');}if(parsed.format==='sunny-stacy-activity-bundle')await contentRepository.import(text);else await importSet(text);await refresh();message('Content imported.');}finally{e.target.value='';}});
+const createDialog=$('createContent');$('create').onclick=()=>createDialog.showModal();$('cancelCreate').onclick=()=>createDialog.close();
+for(const [type,name,description] of contentTypes){const link=element('a','button');link.href=type==='conceptSet'?'editor.html':'../content/editor.html?type='+type;link.append(element('strong','',name),element('span','',description));createDialog.querySelector('.content-types').append(link);}
+if(new URLSearchParams(location.search).has('create'))createDialog.showModal();
 run(refresh);

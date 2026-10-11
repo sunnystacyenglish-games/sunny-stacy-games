@@ -1,0 +1,17 @@
+MY-CONTENT-2.21.0.md
+package.json
+sets/index.html
+sets/library-preview.js
+sets/library.css
+sets/library.js
+shared/content-library.js
+shared/database.js
+shared/folders.js
+shared/library-model.js
+tests/library-model.test.mjs
+tests/library8-edge.html
+tests/library8-edge.js
+tests/library8.html
+tests/library8.js
+DELETE sets/content-library.js
+CHANGED-FILES-2.21.0.txt
