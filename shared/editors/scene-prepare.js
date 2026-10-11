@@ -1,3 +1,4 @@
+import {imagePreview} from './controls.js';
 import {el,action,input,id,preview} from './common.js';
 import {imageInput,imageFromURL} from './image-input.js';
 import {CONTENT_LIMITS as L} from '../activity/limits.js';
@@ -6,7 +7,7 @@ export function prepareSceneContent(c,{next,uploadBackground}) {
  const d=c.data,wrap=el('div','scene-prepare'),left=el('section','scene-background-column'),right=el('section','scene-prompts');
  const changed=()=>{c.changed();c.draw();};
  left.append(imageInput(d.background?'Change background':'+ Add image',uploadBackground));
- if(d.background)left.append(preview(d.background,c.services,'Scene background'));
+ if(d.background){const thumbnail=action('',()=>imagePreview(d.background,c.services,{alt:'Scene background',replace:async file=>{await uploadBackground(file);return d.background;}}));thumbnail.className='studio-background-preview';thumbnail.setAttribute('aria-label','Preview scene background');thumbnail.append(preview(d.background,c.services,'Scene background'));left.append(thumbnail);}
  const add=async(file,promptId)=>c.work(async()=>{
   if(d.assets.length>=L.scene.assets)throw Error('Maximum 50 Elements reached.');
   const media=await c.services.upload(file,{original:true});
@@ -17,13 +18,10 @@ export function prepareSceneContent(c,{next,uploadBackground}) {
   const images=el('div','scene-prepare-images');
   for(const asset of d.assets.filter(a=>promptId?a.promptId===promptId:!d.targets.some(t=>t.id===a.promptId))){
    const b=action('',()=>{
-    const dialog=el('dialog','image-input-dialog scene-image-dialog');
-    dialog.append(preview(asset.media,c.services,asset.name),action('Delete image',()=>{
-     if(d.objects.some(o=>o.assetId===asset.id)){c.error('Remove its placed Elements in Arrange & Link first.');dialog.close();return;}
-     d.assets=d.assets.filter(a=>a.id!==asset.id);dialog.close();changed();
-    }),imageInput('Replace Image',file=>c.work(async()=>{asset.media=await c.services.upload(file,{original:true});dialog.querySelector('.editor-image')?.remove();dialog.prepend(preview(asset.media,c.services,asset.name));},true)),action('Close',()=>dialog.close()));
-    dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
-   });b.setAttribute('aria-label','View '+asset.name);b.append(preview(asset.media,c.services,asset.name));images.append(b);
+    imagePreview(asset.media,c.services,{alt:asset.name,remove:()=>{
+     if(d.objects.some(o=>o.assetId===asset.id)){c.error('Remove its placed Elements in Arrange & Link first.');return;}
+     d.assets=d.assets.filter(a=>a.id!==asset.id);changed();
+    },replace:async file=>{await c.work(async()=>{asset.media=await c.services.upload(file,{original:true});},true);return asset.media;}});   });b.setAttribute('aria-label','View '+asset.name);b.append(preview(asset.media,c.services,asset.name));images.append(b);
   }
   host.append(images);
  }
@@ -49,4 +47,5 @@ export function prepareSceneContent(c,{next,uploadBackground}) {
   c.error('');next();
  }));
 }
+
 

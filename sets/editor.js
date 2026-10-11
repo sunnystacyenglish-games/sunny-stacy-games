@@ -1,14 +1,16 @@
+import {imagePreview} from '../shared/editors/controls.js';
 import {CONTENT_LIMITS} from '../shared/activity/limits.js';
 import {chooseSetGame} from '../shared/game-chooser.js';
 import {validatePlayableSet,validConceptCount,canPlaySet,isWord,isEmoji} from '../shared/content-rules.js';
 import {setRepository,newId,validateSet,inferImageSource} from '../shared/sets.js';
-import {showImage,readUpload} from '../shared/images.js';
+import {showImage,readUpload,imageURL} from '../shared/images.js';
 import {element,button,message,confirmDialog} from '../shared/ui.js';
 let current={id:newId(),name:'',imageSource:'emoji',items:[]},savedId=null,dirty=false,pendingUploads=0,revision=0;
 const $=id=>document.getElementById(id);
 const uploadVersions=new WeakMap();
 let activeItemId=null;
-async function assignImage(item,file){const attempt=(uploadVersions.get(item)||0)+1;uploadVersions.set(item,attempt);pendingUploads++;$('saveSet').disabled=true;try{const image=await readUpload(file);if(attempt===uploadVersions.get(item)&&current.items.includes(item)){item.image=image;const livePreview=[...$('items').children].find(row=>row.dataset.id===item.id)?.querySelector('.preview');if(livePreview){showImage(livePreview,image,item.word);const row=livePreview.closest('.item-row');row.querySelector('.source-retained')?.remove();const sourceField=row.querySelector('.source-field input:not([type=file])');if(sourceField){sourceField.value='';row.querySelector('.source-field').append(element('p','help source-retained','Pasted image is used until you replace it.'));}}message('Image added.');changed();}}catch(error){message(error.message,true);}finally{pendingUploads--;$('saveSet').disabled=pendingUploads>0;}}
+async function assignImage(item,file,rethrow=false){const attempt=(uploadVersions.get(item)||0)+1;uploadVersions.set(item,attempt);pendingUploads++;$('saveSet').disabled=true;try{const image=await readUpload(file);if(attempt===uploadVersions.get(item)&&current.items.includes(item)){item.image=image;const livePreview=[...$('items').children].find(row=>row.dataset.id===item.id)?.querySelector('.preview');if(livePreview){showConceptPreview(livePreview,image,item.word);const row=livePreview.closest('.item-row');row.querySelector('.source-retained')?.remove();const sourceField=row.querySelector('.source-field input:not([type=file])');if(sourceField){sourceField.value='';row.querySelector('.source-field').append(element('p','help source-retained','Pasted image is used until you replace it.'));}}message('Image added.');changed();}}catch(error){message(error.message,true);if(rethrow)throw error;}finally{pendingUploads--;$('saveSet').disabled=pendingUploads>0;}}
+function showConceptPreview(host,image,word){showImage(host,image,word);const clickable=!!imageURL(image);host.tabIndex=clickable?0:-1;host.setAttribute('role',clickable?'button':'img');}
 function activate(id){activeItemId=id;for(const row of $('items').children)row.classList.toggle('is-active',row.dataset.id===id);}
 document.addEventListener('paste',event=>{
   if(document.querySelector('dialog[open]')||$('editorContent').hidden)return;
@@ -26,15 +28,19 @@ function draw(){
     const row=element('div','item-row');row.dataset.id=item.id;row.classList.toggle('is-active',item.id===activeItemId);row.addEventListener('pointerdown',()=>activate(item.id));row.addEventListener('focusin',()=>activate(item.id));row.append(element('span','number',`${index+1}`));
     const word=element('input');word.value=item.word;word.maxLength=120;word.setAttribute('aria-label',`Word ${index+1}`);word.oninput=()=>{item.word=word.value;changed();};row.append(field('Word',word));
     const inputHost=element('div','source-field'),preview=element('div','preview');preview.setAttribute('aria-label',`Preview ${index+1}`);
+    preview.title='Preview image';
+    const openImage=()=>{if(!imageURL(item.image))return;imagePreview(item.image,{mediaURL:imageURL},{alt:item.word||'Concept image',remove:()=>{uploadVersions.set(item,(uploadVersions.get(item)||0)+1);item.image={type:'upload'};changed();draw();},replace:async file=>{await assignImage(item,file,true);return item.image;}});};
+    preview.onclick=openImage;preview.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openImage();}};
+
     const sourceType=current.imageSource==='mixed'?item.image.type:current.imageSource;
     function sourceInput(){
-      inputHost.replaceChildren();showImage(preview,item.image,item.word);
+      inputHost.replaceChildren();showConceptPreview(preview,item.image,item.word);
       if(sourceType==='upload'){
         const input=element('input');input.type='file';input.accept='image/png,image/jpeg,image/webp';input.setAttribute('aria-label',`Upload image ${index+1}`);
 
         input.onchange=()=>{if(input.files[0])assignImage(item,input.files[0]);input.value='';};
         const zone=element('div','drop-zone','Drop or paste image');zone.tabIndex=0;zone.setAttribute('role','group');zone.setAttribute('aria-label',`Paste or drop image ${index+1}`);
-        const actions=element('div','row');actions.append(button('Browse / Replace',()=>input.click()),button('Remove',()=>{uploadVersions.set(item,(uploadVersions.get(item)||0)+1);item.image={type:'upload'};inputHost.querySelector('.source-retained')?.remove();changed();showImage(preview,item.image,item.word);}));
+        const actions=element('div','row');actions.append(button('Browse / Replace',()=>input.click()),button('Remove',()=>{uploadVersions.set(item,(uploadVersions.get(item)||0)+1);item.image={type:'upload'};inputHost.querySelector('.source-retained')?.remove();changed();showConceptPreview(preview,item.image,item.word);}));
         zone.append(actions);input.hidden=true;zone.append(input);
         zone.addEventListener('click',event=>{if(event.target===zone)input.click();});
         zone.addEventListener('keydown',event=>{if(event.target===zone&&(event.key==='Enter'||event.key===' ')){event.preventDefault();input.click();}});
@@ -43,7 +49,7 @@ function draw(){
         inputHost.append(zone);
       }else{
         const input=element('input');input.value=item.image.type===sourceType?(item.image.value||''):'';input.maxLength=sourceType==='emoji'?40:4096;input.placeholder=sourceType==='emoji'?'🐱':'https://…';input.setAttribute('aria-label',`${sourceType==='emoji'?'Emoji':'Image URL'} ${index+1}`);
-        let timer;input.oninput=()=>{item.image={type:sourceType,value:input.value};inputHost.querySelector('.source-retained')?.remove();changed();clearTimeout(timer);timer=setTimeout(()=>{if(item.image.type==='url'&&!/^https:\/\//i.test(item.image.value)){preview.textContent='Use HTTPS';return;}showImage(preview,item.image,item.word);},item.image.type==='emoji'?0:350);};inputHost.append(field(sourceType==='emoji'?'Emoji':'Image URL',input));
+        let timer;input.oninput=()=>{item.image={type:sourceType,value:input.value};inputHost.querySelector('.source-retained')?.remove();changed();clearTimeout(timer);timer=setTimeout(()=>{if(item.image.type==='url'&&!/^https:\/\//i.test(item.image.value)){preview.textContent='Use HTTPS';return;}showConceptPreview(preview,item.image,item.word);},item.image.type==='emoji'?0:350);};inputHost.append(field(sourceType==='emoji'?'Emoji':'Image URL',input));
       }
     }
     sourceInput();if(item.image.type!==sourceType)inputHost.append(element('p','help source-retained','Previous image kept until you replace it.'));

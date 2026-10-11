@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {reconcileLines} from '../shared/editors/lines.js';
+let n=0;const id=()=>String(++n),old=[{id:'a',text:'A'},{id:'b',text:'cat'},{id:'c',text:'sleeps'}];
+assert.deepEqual(reconcileLines(old,'A\ncat\nsleeps',id),old);
+assert.deepEqual(reconcileLines(old,'A\nsmall\ncat\nsleeps',id).map(x=>x.id),['a','1','b','c']);
+assert.deepEqual(reconcileLines(old,'sleeps\nA\ncat',id).map(x=>x.id),['c','a','b']);
+assert.deepEqual(reconcileLines(old,'A\ndog\nsleeps',id)[1],{id:'b',text:'dog'});
+assert.deepEqual(reconcileLines(old,'A\nsleeps',id).map(x=>x.id),['a','c']);
+assert.deepEqual(reconcileLines([{id:'a',text:'cat'},{id:'b',text:'cat'}],'cat\ncat',id).map(x=>x.id),['a','b']);
+console.log('PASS fragment identity: insert, edit, delete, reorder, duplicate text');
