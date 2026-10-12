@@ -6,9 +6,9 @@
       "version": "2.23.0",
       "type": "improved",
       "title": "Adaptive decks, independent Blur and UI fixes",
-      "description": "Implemented and locally tested: adaptive placement and labels for 1–5 decks; independent Word Blur, Picture Blur or Nothing remembered per deck between games; stable Reveal and Done / Continue controls; long-card scrolling; readable settings and revealed boost tiles across eight themes. Uploaded to GitHub; live Pages publication has not been verified.",
-      "published": false,
-      "verified": false
+      "description": "Implemented and locally tested: adaptive placement and labels for 1–5 decks; independent Word Blur, Picture Blur or Nothing remembered per deck between games; stable Reveal and Done / Continue controls; long-card scrolling; readable settings and revealed boost tiles across eight themes.",
+      "published": true,
+      "verified": true
     },
     {
       "id": "cross-game-content-delta-9",
@@ -16,9 +16,9 @@
       "version": "2.22.0",
       "type": "new",
       "title": "Delta 9: cross-game content compatibility",
-      "description": "Implemented and locally tested: Card Decks and Sentence Correction in Tic-Tac-Toe; Sentence Correction and Bridges in Board Race. Shared task modals gate evaluation behind Reveal Answer; Bridges require all gaps and lock choices after reveal. Tic-Tac-Toe preserves Steal; graded Board Race moves only on Correct, including individual Team Up decisions. Existing authored materials remain unchanged. Uploaded to GitHub; live Pages publication has not been verified.",
-      "published": false,
-      "verified": false
+      "description": "Implemented and locally tested: Card Decks and Sentence Correction in Tic-Tac-Toe; Sentence Correction and Bridges in Board Race. Shared task modals gate evaluation behind Reveal Answer; Bridges require all gaps and lock choices after reveal. Tic-Tac-Toe preserves Steal; graded Board Race moves only on Correct, including individual Team Up decisions. Existing authored materials remain unchanged.",
+      "published": true,
+      "verified": true
     },
     {
       "id": "my-content-unified-library-delta-8",
@@ -26,9 +26,9 @@
       "version": "2.21.0",
       "type": "improved",
       "title": "Delta 8: unified My Content library",
-      "description": "Implemented and locally tested: one grid for Concepts, Scenes, Card Decks, Bridges and Sentence Correction; shared one-level folders, previews and action menus; current-folder search, type filters and sorting. Cards open editors; Play is removed from the library. Move to… works without dragging; deleting a folder returns materials to the root. Existing local records, IDs and images are preserved. Uploaded to GitHub; live Pages publication has not been verified.",
-      "published": false,
-      "verified": false
+      "description": "Implemented and locally tested: one grid for Concepts, Scenes, Card Decks, Bridges and Sentence Correction; shared one-level folders, previews and action menus; current-folder search, type filters and sorting. Cards open editors; Play is removed from the library. Move to… works without dragging; deleting a folder returns materials to the root. Existing local records, IDs and images are preserved.",
+      "published": true,
+      "verified": true
     },
     {
       "id": "ispy-usability-fixes",
