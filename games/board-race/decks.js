@@ -8,11 +8,21 @@ export function similarColors(a,b){const x=lab(a),y=lab(b);return Math.hypot(...
 export function assignDeckSpaces(size,decks,specials){let cursor=0;return Array.from({length:size},(_,index)=>Object.hasOwn(specials,index)?{type:'boost',effect:specials[index]}:{type:'deck',deckKey:decks[cursor++%decks.length].key});}
 export function deckPositions(count){if(count===1)return [[.5,.5]];if(count===2)return [[.25,.5],[.75,.5]];if(count===3)return [[.25,.22],[.75,.22],[.5,.78]];if(count===4)return [[.25,.25],[.75,.25],[.25,.75],[.75,.75]];if(count===5)return [[.2,.18],[.8,.18],[.2,.82],[.8,.82],[.5,.5]];throw Error('Choose 1–5 decks.');}
 export function deckComposition(count,areaWidth,areaHeight){
- const positions=deckPositions(count).map(([x,y])=>[(.5+(x-.5)*.9)*areaWidth,y*areaHeight]);
- let width=Math.min(138,areaWidth*(count===1?.5:count===5?.30:.38),areaHeight*(count<=2?.75:.29)*.78);
- const fits=w=>positions.every(([x,y],i)=>x-w/2>=0&&y-w/.78/2>=0&&x+w/2+7<=areaWidth&&y+w/.78/2+7<=areaHeight&&positions.slice(0,i).every(([a,b])=>Math.abs(x-a)>=w+9||Math.abs(y-b)>=w/.78+9));
- while(width>1&&!fits(width))width*=.97;
- return {positions,width,height:width/.78};
+ if(!Number.isInteger(count)||count<1||count>5)throw Error('Choose 1–5 decks.');
+ const ratio=.72,padding=12,gap=18,candidates=[];
+ for(let columns=1;columns<=count;columns++){
+  const rows=Math.ceil(count/columns),width=Math.min((areaWidth-2*padding-(columns-1)*gap)/columns,(areaHeight-2*padding-(rows-1)*gap)/rows*ratio);
+  if(width<=0)continue;
+  candidates.push({columns,rows,width,height:width/ratio});
+ }
+ candidates.sort((a,b)=>b.width-a.width||a.rows-b.rows);const best=candidates[0];
+ if(!best)throw Error('The board interior is too small for the decks.');
+ const {columns,rows,width,height}=best,positions=[];
+ for(let row=0;row<rows;row++){
+  const length=Math.min(columns,count-row*columns),start=(areaWidth-(length*width+(length-1)*gap))/2;
+  for(let col=0;col<length;col++)positions.push([start+width/2+col*(width+gap),(areaHeight-(rows*height+(rows-1)*gap))/2+height/2+row*(height+gap)]);
+ }
+ return {positions,width,height,columns,rows};
 }
 export class DeckSession{
  constructor(decks,random=Math.random){this.decks=validateSelectedDecks(decks);this.random=random;this.state='IDLE';this.generation=0;this.pools=new Map(this.decks.map(d=>[d.key,[...d.deck.cards]]));}
