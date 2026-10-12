@@ -97,3 +97,5 @@ body.race-page #board{box-shadow:none;background:transparent;border:0}
 .boost-master{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px;border-radius:14px;background:var(--soft);margin-bottom:10px}
 .boost-master span{display:flex;flex-direction:column;gap:5px}.boost-master small{font-weight:normal;font-size:13px}
 .boost-option:has(input:disabled)>span{opacity:.45}
+
+#task.authored-task[open]{display:flex;flex-direction:column;width:min(780px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:hidden}#task.authored-task #authoredTask{overflow:auto;min-height:0;flex:1}#task.authored-task .teacher-actions{display:flex;flex:none;gap:12px;padding-top:16px;margin-top:12px;border-top:1px solid var(--border)}#task.authored-task .teacher-actions button{flex:1;min-height:48px;background:#528a79;color:white}#task.authored-task .teacher-actions button:first-child{background:#c56650}

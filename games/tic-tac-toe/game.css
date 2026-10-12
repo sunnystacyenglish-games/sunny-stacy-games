@@ -18,3 +18,7 @@
 #reveal{flex:none;align-self:center;min-height:42px;padding:8px 24px}
 
 @media(min-width:601px) and (min-height:501px){#taskImage img{max-height:min(28dvh,240px)}}
+
+#task.authored-task #authoredTask{overflow:auto;min-height:0;flex:1;padding:18px 0}#task.authored-task #incorrect{background:#c56650;color:white;border-color:transparent}#task.authored-task #correct{background:#528a79;color:white}#task.authored-task .teacher-actions{border-top:1px solid var(--border);margin-top:14px}
+
+#task.authored-task #authoredTask[data-task-type=cardDecks]{justify-content:center}
