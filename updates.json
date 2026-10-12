@@ -1,6 +1,36 @@
 {
   "updates": [
     {
+      "id": "board-race-decks-2-23-0",
+      "area": "Board Race",
+      "version": "2.23.0",
+      "type": "improved",
+      "title": "Adaptive decks, independent Blur and UI fixes",
+      "description": "Implemented and locally tested: adaptive placement and labels for 1–5 decks; independent Word Blur, Picture Blur or Nothing remembered per deck between games; stable Reveal and Done / Continue controls; long-card scrolling; readable settings and revealed boost tiles across eight themes. Uploaded to GitHub; live Pages publication has not been verified.",
+      "published": false,
+      "verified": false
+    },
+    {
+      "id": "cross-game-content-delta-9",
+      "area": "Tic-Tac-Toe / Board Race",
+      "version": "2.22.0",
+      "type": "new",
+      "title": "Delta 9: cross-game content compatibility",
+      "description": "Implemented and locally tested: Card Decks and Sentence Correction in Tic-Tac-Toe; Sentence Correction and Bridges in Board Race. Shared task modals gate evaluation behind Reveal Answer; Bridges require all gaps and lock choices after reveal. Tic-Tac-Toe preserves Steal; graded Board Race moves only on Correct, including individual Team Up decisions. Existing authored materials remain unchanged. Uploaded to GitHub; live Pages publication has not been verified.",
+      "published": false,
+      "verified": false
+    },
+    {
+      "id": "my-content-unified-library-delta-8",
+      "area": "My Content",
+      "version": "2.21.0",
+      "type": "improved",
+      "title": "Delta 8: unified My Content library",
+      "description": "Implemented and locally tested: one grid for Concepts, Scenes, Card Decks, Bridges and Sentence Correction; shared one-level folders, previews and action menus; current-folder search, type filters and sorting. Cards open editors; Play is removed from the library. Move to… works without dragging; deleting a folder returns materials to the root. Existing local records, IDs and images are preserved. Uploaded to GitHub; live Pages publication has not been verified.",
+      "published": false,
+      "verified": false
+    },
+    {
       "id": "ispy-usability-fixes",
       "date": "2026-10-10",
       "area": "I Spy / Spot It",
@@ -13,9 +43,9 @@
     {
       "id": "board-race-dark-theme-contrast",
       "area": "Board Race",
-      "status": "known",
+      "status": "fix_pending_verification",
       "title": "Dark theme contrast",
-      "description": "Some board surfaces and player names are difficult to read in dark mode."
+      "description": "Version 2.23.0 fixes settings/control contrast and revealed boost-tile colours, with local browser checks across eight themes. Live Pages verification is pending; player-name contrast from the original report has not been explicitly confirmed fixed."
     }
   ],
   "roadmap": [
@@ -29,9 +59,9 @@
     {
       "id": "unified-library",
       "area": "My Content",
-      "status": "planned",
+      "status": "in_progress",
       "title": "Unified content library",
-      "description": "Shared folders, filtering, sorting and consistent content cards."
+      "description": "Delta 8 (2.21.0) implements the unified five-type library, shared folders, previews, filtering and sorting. Local checks passed and code was uploaded to GitHub; live Pages publication verification remains pending."
     },
     {
       "id": "chomp",
@@ -39,6 +69,20 @@
       "status": "planned",
       "title": "CHOMP game",
       "description": "Developing character jaw animations and gameplay."
+    },
+    {
+      "id": "cross-game-content-compatibility",
+      "area": "Tic-Tac-Toe / Board Race",
+      "status": "in_progress",
+      "title": "Cross-game content compatibility",
+      "description": "Delta 9 (2.22.0) is implemented and locally tested, with four new game/content combinations and shared task modals. Code is uploaded; live Pages publication verification remains pending."
+    },
+    {
+      "id": "board-race-decks-ui",
+      "area": "Board Race",
+      "status": "in_progress",
+      "title": "Adaptive decks and Board Race UI fixes",
+      "description": "Version 2.23.0 is implemented and locally tested: adaptive decks, persistent per-deck Blur, stable card controls and theme fixes. Code is uploaded; live Pages verification and confirmation of the original player-name contrast report remain pending."
     }
   ]
 }
