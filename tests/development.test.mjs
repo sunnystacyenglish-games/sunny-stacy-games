@@ -4,7 +4,11 @@ assert.deepEqual(publishedUpdates(data).map(x=>x.id),['new','old','unknown']);as
 import {normalizeFeed} from '../shared/development-data.js';
 import {readFileSync} from 'node:fs';
 const manual=normalizeFeed(JSON.parse(readFileSync(new URL('../updates.json',import.meta.url))));
-assert.equal(publishedUpdates(manual).length,1);assert.equal(activeIssues(manual)[0].status,'Known');assert.equal(roadmapItems(manual,'Coming Next').length,3);
+const raw=JSON.parse(readFileSync(new URL('../updates.json',import.meta.url)));
+assert.deepEqual(new Set(publishedUpdates(manual).map(x=>x.id)),new Set(raw.updates.filter(x=>x.published!==false&&x.verified!==false).map(x=>x.id)));
+assert.ok(publishedUpdates(manual).some(x=>x.id==='ispy-usability-fixes'));
+assert.ok(activeIssues(manual).every(x=>['Known','In Progress','Fix Pending Verification'].includes(x.status)));
+assert.ok(roadmapItems(manual,'Coming Next').length>0);
 assert.equal(publishedUpdates(normalizeFeed({updates:[{id:'draft',title:'Draft',type:'new',published:false}]})).length,0);
 assert.throws(()=>normalizeFeed({updates:'bad'}));assert.throws(()=>normalizeFeed({knownIssues:[{id:'x',title:'x',status:'unknown'}]}));assert.throws(()=>normalizeFeed({updates:[{id:'x',title:'x',type:'new'},{id:'x',title:'y',type:'new'}]}));
 console.log('PASS user JSON, lowercase status mapping, explicit drafts and malformed data');

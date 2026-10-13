@@ -1,6 +1,10 @@
+import {GAME_CATALOG} from './game-catalog.js';
 import {siteContent} from './site-content.js';
-document.querySelector('#aboutCopy').textContent=siteContent.about;
+
 for(const social of siteContent.socials){let valid=false;try{valid=new URL(social.url).protocol==='https:';}catch{}const el=document.createElement(valid?'a':'span');el.textContent=social.name;el.setAttribute('aria-label',social.name);const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');const paths={telegram:'M2 11 22 3 18 22 11 16 7 20 7 14 19 6 9 13Z',youtube:'M21 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2ZM9 8l7 4-7 4Z'};if(paths[social.icon]){const p=document.createElementNS(icon.namespaceURI,'path');p.setAttribute('d',paths[social.icon]);p.setAttribute('fill-rule','evenodd');icon.append(p);}else{const t=document.createElementNS(icon.namespaceURI,'text');t.setAttribute('x','1');t.setAttribute('y','19');t.setAttribute('font-size','23');t.textContent='@';icon.append(t);}el.prepend(icon);if(valid){el.href=social.url;el.target='_blank';el.rel='noopener noreferrer';}else{el.setAttribute('aria-disabled','true');el.title='Link coming soon';}document.querySelector('#socialLinks').append(el);}
 document.querySelector('#year').textContent=new Date().getFullYear();
 
-document.querySelector('.social-note').hidden=siteContent.socials.some(s=>{try{return new URL(s.url).protocol==='https:';}catch{return false;}});
+
+export function renderGameCatalog(host,games=GAME_CATALOG){host.replaceChildren();for(const game of games){const card=document.createElement('article');card.className='released-game';card.innerHTML=game.preview;const copy=document.createElement('div');copy.className='game-copy';for(const [tag,cls,text] of [['span','eyebrow',game.eyebrow],['h3','',game.name],['p','',game.description]]){const n=document.createElement(tag);n.className=cls;n.textContent=text;copy.append(n);}const link=document.createElement('a');link.className='button primary';link.href=game.url;link.textContent='Play '+game.name+' →';copy.append(link);card.append(copy);host.append(card);}}
+renderGameCatalog(document.querySelector('#gameCatalog'));
+if(['#known-issues','#roadmap','#feedback'].includes(location.hash))location.replace('updates/'+location.hash);

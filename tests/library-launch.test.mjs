@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {GAME_CATALOG} from '../shared/game-catalog.js';
+import {compatibleGames,contentGameURL} from '../shared/library-games.js';
+import {selectLibrary} from '../shared/library-model.js';
+const item=(type,data={})=>({id:'source-id',type,record:{content:{data}}});
+const ids=i=>compatibleGames(i).map(g=>g.id);
+assert.equal(GAME_CATALOG.length,6);
+assert.equal(new Set(GAME_CATALOG.map(g=>g.url)).size,6);
+assert.deepEqual(ids(item('scene')),['i-spy']);
+assert.deepEqual(ids(item('bridge')),['board-race']);
+assert.deepEqual(ids(item('sentenceCorrection')),['tic-tac-toe','board-race']);
+assert.deepEqual(ids(item('cardDecks')),['tic-tac-toe','board-race']);
+const concepts={id:'concepts',type:'conceptSet',record:{id:'concepts',name:'Animals',items:['cat','dog','fox','pig','cow'].map((word,i)=>({id:'i'+i,word,image:{type:'emoji',value:'🐱'}}))}};
+assert.deepEqual(ids(concepts),['dobble','tic-tac-toe','wordly','story-dice','board-race']);
+assert.deepEqual(ids({...concepts,record:{...concepts.record,items:concepts.record.items.slice(0,4)}}),[]);
+const race=GAME_CATALOG.find(g=>g.id==='board-race');
+for(const n of [1,2,3,4,5,6]){const decks=Array.from({length:n},(_,i)=>({id:'d'+i,color:'#4E83BC'}));const u=new URL(contentGameURL(item('cardDecks',{decks}),race));assert.equal(JSON.parse(u.searchParams.get('deckRefs')).length,n<=5?n:0);assert.equal(u.searchParams.get('contentId'),'source-id');}
+const ttt=GAME_CATALOG.find(g=>g.id==='tic-tac-toe');assert.equal(new URL(contentGameURL(item('cardDecks'),ttt)).searchParams.get('taskDeckId'),'');
+const folders=[{id:'a'},{id:'b'}],items=[{name:'Hobbies A',folderId:'a',type:'conceptSet'},{name:'Hobbies B',folderId:'b',type:'cardDecks'},{name:'Hobbies root',type:'cardDecks'}];
+assert.equal(selectLibrary(items,{folders,folderId:'a',search:'hobbies'}).length,3);
+assert.equal(selectLibrary(items,{folders,folderId:'a',search:'HOBBIES',type:'cardDecks'}).length,2);
+assert.deepEqual(selectLibrary(items,{folders,folderId:'a'}),[items[0]]);
+console.log('PASS compatibility matrix, minimum five, source URL and all decks <=5, explicit TTT deck choice, global search across folders and clear-to-location');

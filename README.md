@@ -1,10 +1,12 @@
-# Sunny & Stacy Games — 2.16.0 · Board Race Cards / Decks
+# Sunny & Stacy Games — 2.24.0 · Hub & My Content
 
 Локальное HTML/CSS/JavaScript-приложение. Существующие темы и изображения сохранены; backend не добавлен.
 
+Текущее обновление и проверки: [HUB-LIBRARY-2.24.0.md](HUB-LIBRARY-2.24.0.md).
+
 ## Запуск
 
-1. Распакуйте sunny-stacy-games-2.16.0.zip целиком.
+1. Распакуйте sunny-stacy-games-2.24.0.zip целиком.
 2. Откройте терминал в папке sunny-stacy-games, где находится package.json.
 3. С Node.js 18+ выполните `node serve.mjs`. Установка npm-пакетов не требуется.
 4. Откройте http://127.0.0.1:4173. Не закрывайте терминал во время работы.
