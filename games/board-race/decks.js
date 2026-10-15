@@ -1,4 +1,5 @@
 import {validateDecks} from '../../shared/editors/models.js';
+import {shuffle} from '../dobble/engine.js';
 // Session snapshots retain author IDs/content; no mutation of Content Studio records.
 export function deckKey(documentId,deckId){return JSON.stringify([documentId,deckId]);}
 export function availableDecks(documents){return documents.filter(d=>d.content?.type==='cardDecks').flatMap(d=>(d.content.data?.decks||[]).map(deck=>({key:deckKey(d.id,deck.id),documentId:d.id,documentName:d.name,deck:structuredClone(deck)})));}
@@ -25,12 +26,15 @@ export function deckComposition(count,areaWidth,areaHeight){
  return {positions,width,height,columns,rows};
 }
 export class DeckSession{
- constructor(decks,random=Math.random){this.decks=validateSelectedDecks(decks);this.random=random;this.state='IDLE';this.generation=0;this.pools=new Map(this.decks.map(d=>[d.key,[...d.deck.cards]]));}
+ constructor(decks,random=Math.random){this.decks=validateSelectedDecks(decks);this.random=random;this.state='IDLE';this.generation=0;this.bags=new Map(this.decks.map(d=>{const ids=d.deck.cards.map(card=>card.id);return [d.key,{ids,order:shuffle(ids,random),cursor:0,last:null}];}));}
  wait(key){if(this.state!=='IDLE')return false;if(!this.decks.some(d=>d.key===key))throw Error('Required deck is unavailable.');this.required=key;this.state='WAIT_FOR_DRAW';return true;}
- draw(key){if(this.state!=='WAIT_FOR_DRAW'||key!==this.required)return null;const deck=this.decks.find(d=>d.key===key);const pool=this.pools.get(key);this.inFlight={key,card:pool.splice(Math.min(pool.length-1,Math.floor(this.random()*pool.length)),1)[0]};this.card=structuredClone(this.inFlight.card);this.state='CARD_DRAWING';return {card:this.card,deck,generation:++this.generation};}
+ draw(key){if(this.state!=='WAIT_FOR_DRAW'||key!==this.required)return null;const deck=this.decks.find(d=>d.key===key),bag=this.bags.get(key);
+  if(bag.cursor===bag.order.length){bag.order=shuffle(bag.ids,this.random);bag.cursor=0;if(bag.order.length>1&&bag.order[0]===bag.last){const j=1+Math.floor(this.random()*(bag.order.length-1));[bag.order[0],bag.order[j]]=[bag.order[j],bag.order[0]];}}
+  const id=bag.order[bag.cursor++];bag.last=id;this.inFlight={key,card:deck.deck.cards.find(card=>card.id===id)};this.card=structuredClone(this.inFlight.card);this.state='CARD_DRAWING';return {card:this.card,deck,generation:++this.generation};}
  open(token){if(token!==this.generation||this.state!=='CARD_DRAWING')return false;this.state='WAIT_FOR_CONTINUE';return true;}
  returnCard(){if(this.state!=='WAIT_FOR_CONTINUE')return null;this.state='CARD_RETURNING';return this.generation;}
  finish(token){if(token!==this.generation||this.state!=='CARD_RETURNING')return false;this.recycle();this.state='IDLE';this.card=null;this.required=null;return true;}
- recycle(){if(!this.inFlight)return;const pool=this.pools.get(this.inFlight.key);pool.push(this.inFlight.card);for(let i=pool.length-1;i>0;i--){const j=Math.min(i,Math.floor(this.random()*(i+1)));[pool[i],pool[j]]=[pool[j],pool[i]];}this.inFlight=null;}
+ // Visual return/cancellation releases the in-flight card, never rewinds the bag.
+ recycle(){this.inFlight=null;}
  cancel(){this.recycle();this.generation++;this.state='IDLE';this.card=null;this.required=null;}
 }
