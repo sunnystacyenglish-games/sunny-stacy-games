@@ -50,7 +50,7 @@ export class BridgeTask {
   }
  }
  select(id){if(this.revealed||!this.source.gaps.some(g=>g.id===id))return false;this.selected=id;return true;}
- available(){const used=new Set(this.placements.values()),group=this.source.gaps.find(g=>g.id===this.selected)?.groupId;return this.options.filter(o=>!used.has(o.id)&&(!group||o.groupId===group));}
+ available(allGroups=false){const used=new Set(this.placements.values()),group=allGroups?null:this.source.gaps.find(g=>g.id===this.selected)?.groupId;return this.options.filter(o=>!used.has(o.id)&&(!group||o.groupId===group));}
  place(id){if(this.revealed||!this.selected||!this.available().some(o=>o.id===id))return false;this.placements.set(this.selected,id);return true;}
  get complete(){return this.source.gaps.every(g=>this.placements.has(g.id));}
  reveal(){if(this.revealed||!this.complete)return false;this.revealed=true;return true;}

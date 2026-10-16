@@ -5,7 +5,7 @@ assert.equal(taskAnswerDiff('She go.'+tail,'She goes.'+tail).filter(x=>x.changed
 const bridge={id:'bridge',bricks:[{id:'a',text:'I'},{id:'b',text:'go'},{id:'c',text:'to school'},{id:'d',text:'by bus'}],gaps:[{id:'verb',brickId:'b',groupId:'verbs'},{id:'travel',brickId:'d',groupId:'travel'}],groups:[{id:'verbs',distractors:[{id:'same1',text:'go'},{id:'same2',text:'go'}]},{id:'travel',distractors:[{id:'no',text:'on bus'}]}]};
 const original=JSON.stringify(bridge),task=new BridgeTask(bridge);
 assert.equal(task.reveal(),false);assert.equal(task.place('missing'),false);
-task.select('travel');assert.equal(task.available().length,2);const travel=task.available()[1];task.place(travel.id);
+task.select('travel');assert.equal(task.available().length,2);assert.equal(task.available(true).length,5);const foreign=task.available(true).find(o=>o.groupId!=='travel');assert.equal(task.place(foreign.id),false);const travel=task.available()[1];task.place(travel.id);assert.equal(task.available(true).some(o=>o.id===travel.id),false);
 task.select('verb');assert.equal(task.available().length,3);const [answer,copy1,copy2]=task.available();assert.notEqual(copy1.id,copy2.id);task.place(copy1.id);assert.equal(task.complete,true);assert.equal(task.available().some(o=>o.id===copy1.id),false);
 task.place(copy2.id);assert.equal(task.available().some(o=>o.id===copy1.id),true);assert.equal(task.place(travel.id),false);
 const learner=task.fragments();assert.equal(task.reveal(),true);assert.equal(task.select('travel'),false);assert.equal(task.place(answer.id),false);assert.deepEqual(task.fragments(),learner);assert.equal(task.fragments(true).find(f=>f.gapId==='travel').text,'by bus');assert.equal(JSON.stringify(bridge),original);

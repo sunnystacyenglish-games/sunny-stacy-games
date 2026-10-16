@@ -8,6 +8,9 @@
 .activity-task-gap[aria-pressed=true]:not(:disabled){outline:3px solid #dbab57;outline-offset:3px}
 .activity-task-options{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:24px}
 .activity-task-option{flex:0 1 auto;width:auto;min-width:90px;min-height:48px;max-width:100%;border:1px solid #c7ba9f;border-radius:14px;font:inherit;font-size:1.15rem;padding:12px;overflow-wrap:anywhere;color:#182044}
+.activity-task-draggable:not(:disabled){touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.activity-task-gap.is-drop-target{outline:3px solid #dbab57;outline-offset:3px}
+.activity-task-drag-preview{position:fixed;z-index:2147483647;pointer-events:none;transform:translate(-50%,-50%);border:1px solid #c7ba9f;border-radius:14px;padding:12px;background:#ffe7b8;color:#182044;font:inherit;box-shadow:0 5px 18px #0003}
 .activity-task [data-tone="0"]{background:#ffe7b8}.activity-task [data-tone="1"]{background:#dbe8dd}.activity-task [data-tone="2"]{background:#f9dace}.activity-task [data-tone="3"]{background:#e0e8ce}
 .activity-task-gap:disabled{opacity:1;color:inherit;cursor:default}
 .activity-task-reveal{align-self:center;min-height:44px;border:0;border-radius:12px;background:#ffe7b8;color:#49381b;padding:10px 22px;font:inherit}
