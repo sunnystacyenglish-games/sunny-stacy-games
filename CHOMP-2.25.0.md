@@ -29,7 +29,7 @@ Run `node serve.mjs` from the project folder, then open `/games/chomp/`. Choose 
 Run the package's `test` script with npm, or execute its listed Node test files directly. Browser fixtures `tests/chomp-browser.html` write only isolated test records on port 4180; `tests/chomp-characters.html` displays the character gallery.
 
 ## Publication
-Prepared for GitHub main with no forced update. The CHOMP What's New entry remains a verified draft until deployment is confirmed; the roadmap accurately states publication verification is pending. Existing release history and known issues are preserved.
+Published to GitHub main without force: 7e71980b7ec0f84927791036acf81749be0eb173. GitHub Pages deployment 38888380714 completed successfully on 2026-10-16. The live game loaded its character and task; Correct unlocked a tooth and a safe press advanced to the next player and task. The verified release is now published in What's New and removed from the in-progress roadmap. Existing release history and known issues are preserved.
 
 ## Limits
 Settings and teaching content use the existing browser-local storage; shared URLs do not transfer private sets between devices. Full-round state is not resumed after browser reload. This release has no cloud backend, no score/ranking and no automatic judging. Safari and real-device audio/touch testing are not claimed.

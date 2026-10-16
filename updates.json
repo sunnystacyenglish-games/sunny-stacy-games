@@ -9,7 +9,7 @@
       "title": "CHOMP! — New Game",
       "description": "Complete a learning task, choose a tooth and watch out for CHOMP! Eight themed creatures, 1–4 players, four content types, smart task rotation and independent deck Blur.",
       "homeSummary": "New game: complete a task and pick a tooth",
-      "published": false,
+      "published": true,
       "verified": true
     },
     {
@@ -78,13 +78,6 @@
       "status": "in_progress",
       "title": "Unified content library",
       "description": "Delta 8 (2.21.0) implements the unified five-type library, shared folders, previews, filtering and sorting. Local checks passed and code was uploaded to GitHub; live Pages publication verification remains pending."
-    },
-    {
-      "id": "chomp",
-      "area": "CHOMP",
-      "status": "in_progress",
-      "title": "CHOMP! — New Game",
-      "description": "Version 2.25.0 implemented and locally tested: eight creatures, Concepts, Card Decks, Bridges and Sentence Correction; 1–4 players, independent deck Blur and finite tooth-picking rounds. Publication verification pending."
     },
     {
       "id": "cross-game-content-compatibility",
