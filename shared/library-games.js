@@ -8,8 +8,8 @@ export function contentGameURL(item,game){
  const url=new URL('../'+game.url,import.meta.url);
  if(item.type==='conceptSet'){url.searchParams.set('set',item.id);if(game.id==='story-dice')url.searchParams.set('mode','concept');}
  else if(item.type==='scene')url.searchParams.set('activity',item.id);
- else {url.searchParams.set('contentId',item.id);url.searchParams.set('contentMode',item.type==='cardDecks'&&game.id==='board-race'?'decks':item.type);
-  if(item.type==='cardDecks'){if(game.id==='board-race'){const decks=item.record.content.data.decks||[];url.searchParams.set('deckRefs',JSON.stringify(decks.length<=5?decks.map(d=>({key:deckKey(item.id,d.id),color:d.color})):[]));}else url.searchParams.set('taskDeckId','');}
+ else {url.searchParams.set('contentId',item.id);url.searchParams.set('contentMode',item.type==='cardDecks'&&['board-race','chomp'].includes(game.id)?'decks':item.type);
+  if(item.type==='cardDecks'){if(['board-race','chomp'].includes(game.id)){const decks=item.record.content.data.decks||[];url.searchParams.set('deckRefs',JSON.stringify(decks.length<=5?decks.map(d=>({key:deckKey(item.id,d.id),color:d.color})):[]));}else url.searchParams.set('taskDeckId','');}
  }return url.href;
 }
 export function chooseContentGame(item,anchor){

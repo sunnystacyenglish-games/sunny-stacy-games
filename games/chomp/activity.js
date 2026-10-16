@@ -1,0 +1,1 @@
+export const definition={id:'chomp',supportedContentTypes:['conceptSet','cardDecks','bridge','sentenceCorrection'],defaultGameplayConfig:{players:2},normalizeGameplay:raw=>({players:Math.max(1,Math.min(4,Math.round(Number(raw.players)||2)))}),editors:{conceptSet:'conceptSet'},runtime:'games/chomp/',capabilities:{supportsReusableSets:true,teacherReview:true}};

@@ -1,3 +1,4 @@
+import {definition as chomp} from '../../games/chomp/activity.js';
 import {definition as race} from '../../games/board-race/activity.js';
 import {definition as spy} from '../../games/i-spy/activity.js';
 import {registerAuthoringEditors} from '../editors/register.js';
@@ -13,6 +14,6 @@ activityRegistry.registerContent({type:'conceptSet',version:1,editor:'conceptSet
 // Existing Story/Sentence prompt library, not a future custom authoring model.
 activityRegistry.registerContent({type:'builtInPrompts',version:1,editor:'builtInPrompts',validate(data){if(!['story','sentence'].includes(data?.mode))throw Error('Unknown built-in prompt library.');},resolve:data=>({...data})});
 registerAuthoringEditors(activityRegistry);
-for(const definition of [dobble,ttt,wordly,dice,race])activityRegistry.registerGame(definition);
+for(const definition of [dobble,ttt,wordly,dice,race,chomp])activityRegistry.registerGame(definition);
 
 activityRegistry.registerGame(spy);

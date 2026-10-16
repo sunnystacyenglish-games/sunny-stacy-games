@@ -1,0 +1,49 @@
+{
+  "source": "chomp.pptx",
+  "closedSlides": [
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    32
+  ],
+  "restoredTeeth": [
+    [
+      "nature",
+      "15",
+      "layer-1-9.webp"
+    ],
+    [
+      "ocean",
+      "7",
+      "layer-2-10.webp"
+    ],
+    [
+      "magic-school",
+      "10",
+      "layer-3-4.webp"
+    ],
+    [
+      "space",
+      "12",
+      "layer-4-5.webp"
+    ],
+    [
+      "notebook",
+      "10",
+      "layer-5-4.webp"
+    ],
+    [
+      "chalkboard",
+      "16",
+      "layer-6-8.webp"
+    ]
+  ],
+  "method": "Authored layer geometry and source crop paths; closed SVG composites have no slide background.",
+  "baseReference": "CHOMP basic.pptx",
+  "delivery": "Lossless WebP layers; authored closed SVG compositions rendered at 1600×900 to transparent lossless WebP. Source intermediates retained locally in work/chomp-source-assets.",
+  "closedPolish": "Bear authored blockArc restored; directional soft shadows on closed-state teeth."
+}

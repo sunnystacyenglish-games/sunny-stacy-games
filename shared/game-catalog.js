@@ -47,5 +47,6 @@ export const GAME_CATALOG=[
     "eyebrow": "Roll · Move · Speak",
     "description": "Roll, move and practise English.",
     "preview": "<div class=\"game-preview\" aria-hidden=\"true\"><div class=\"race-preview\"><span>1</span><span>2</span><span>🐸</span><span>4</span><span>⚄</span><span>🏁</span></div></div>"
-  }
+  },
+ {id:'chomp',name:'CHOMP!',url:'games/chomp/',eyebrow:'Say · Choose · Chomp',description:'Complete a task. Pick a tooth.',preview:'<div class="game-preview" aria-hidden="true"><img src="games/chomp/assets/closed-0.webp" alt="" style="width:100%;height:100%;object-fit:contain"></div>'}
 ];

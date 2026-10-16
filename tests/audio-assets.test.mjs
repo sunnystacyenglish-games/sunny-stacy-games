@@ -5,12 +5,13 @@ let tick;const players=[];
 globalThis.setInterval=fn=>(tick=fn,1);globalThis.clearInterval=()=>{tick=null;};
 globalThis.Audio=class{constructor(src){this.src=src;this.currentTime=0;this.volume=1;this.plays=0;this.paused=true;players.push(this);}play(){this.plays++;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}};
 const audio=await import('../shared/audio.js');
-for(const action of ['playClick','playCorrect','playWrong','playTileClack','playDiceRoll','playVictory'])audio[action](false);
+for(const action of ['playClick','playCorrect','playWrong','playTileClack','playDiceRoll','playVictory','playChomp'])audio[action](false);
 assert.equal(players.length,0);
 audio.playVictory();const victory=players.at(-1);victory.currentTime=2.99;tick();assert.equal(victory.volume,1);
 victory.currentTime=3.6;tick();assert(Math.abs(victory.volume-.5)<.001);
 victory.currentTime=4.21;tick();assert(victory.paused);assert.equal(victory.currentTime,0);assert.equal(victory.volume,1);
 audio.playVictory();assert.equal(victory.plays,2);assert.equal(victory.currentTime,0);assert.equal(victory.volume,1);audio.stopVictory();assert(victory.paused);assert.equal(tick,null);
-audio.stopAllAudio();assert(players.every(p=>p.paused));
-for(const name of ['ui-click','wrong-soft-buzz','victory','correct-chime','dice-roll'])assert(fs.statSync(new URL('../assets/audio/'+name+'.mp3',import.meta.url)).size>100);
-console.log('PASS source-volume playback, silent disabled effects, victory 3s hold + 1.2s fade, stop/reset/restart, six bundled assets');
+audio.playChomp();const chomp=players.at(-1);assert(chomp.src.endsWith('/chomp.mp3'));assert.equal(chomp.volume,1);audio.stopAllAudio();assert(players.every(p=>p.paused));
+for(const name of ['ui-click','wrong-soft-buzz','victory','correct-chime','dice-roll','chomp'])assert(fs.statSync(new URL('../assets/audio/'+name+'.mp3',import.meta.url)).size>100);
+console.log('PASS source-volume playback, silent disabled effects, victory 3s hold + 1.2s fade, stop/reset/restart, seven bundled assets including CHOMP');
+

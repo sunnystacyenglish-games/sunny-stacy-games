@@ -16,3 +16,5 @@ if(typeof addEventListener==='function')addEventListener('pagehide',stopAllAudio
 
 // Disabling sound immediately silences an effect already in progress.
 if(typeof document!=='undefined')document.addEventListener('change',event=>{const input=event.target;if(input.matches?.('input[type=checkbox]')&&!input.checked&&/sound/i.test(input.id+' '+input.name))stopAllAudio();});
+
+export const playChomp=enabled=>play('chomp',enabled);

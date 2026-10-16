@@ -1,6 +1,18 @@
 {
   "updates": [
     {
+      "id": "chomp-2-25-0",
+      "date": "2026-10-16",
+      "area": "CHOMP!",
+      "version": "2.25.0",
+      "type": "new",
+      "title": "CHOMP! — New Game",
+      "description": "Complete a learning task, choose a tooth and watch out for CHOMP! Eight themed creatures, 1–4 players, four content types, smart task rotation and independent deck Blur.",
+      "homeSummary": "New game: complete a task and pick a tooth",
+      "published": false,
+      "verified": true
+    },
+    {
       "id": "board-race-decks-2-23-0",
       "area": "Board Race",
       "version": "2.23.0",
@@ -70,9 +82,9 @@
     {
       "id": "chomp",
       "area": "CHOMP",
-      "status": "planned",
-      "title": "CHOMP game",
-      "description": "Developing character jaw animations and gameplay."
+      "status": "in_progress",
+      "title": "CHOMP! — New Game",
+      "description": "Version 2.25.0 implemented and locally tested: eight creatures, Concepts, Card Decks, Bridges and Sentence Correction; 1–4 players, independent deck Blur and finite tooth-picking rounds. Publication verification pending."
     },
     {
       "id": "cross-game-content-compatibility",
