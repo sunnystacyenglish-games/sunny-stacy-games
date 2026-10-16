@@ -13,6 +13,8 @@
 .activity-task-drag-preview{position:fixed;z-index:2147483647;pointer-events:none;transform:translate(-50%,-50%);border:1px solid #c7ba9f;border-radius:14px;padding:12px;background:#ffe7b8;color:#182044;font:inherit;box-shadow:0 5px 18px #0003}
 .activity-task [data-tone="0"]{background:#ffe7b8}.activity-task [data-tone="1"]{background:#dbe8dd}.activity-task [data-tone="2"]{background:#f9dace}.activity-task [data-tone="3"]{background:#e0e8ce}
 .activity-task-gap:disabled{opacity:1;color:inherit;cursor:default}
+.activity-task .activity-task-gap[data-result=incorrect]{background:#fbe0dc;color:#842d24;border:2px solid #b34332;outline:none}
+.activity-task .activity-task-gap[data-result=correct]{background:#d6edda;color:#14513c;border:2px solid #46845b;outline:none}
 .activity-task-reveal{align-self:center;min-height:44px;border:0;border-radius:12px;background:#ffe7b8;color:#49381b;padding:10px 22px;font:inherit}
 .activity-task-reveal:disabled,.activity-task-option:disabled{opacity:.5;cursor:default}
 .activity-task-card{padding:24px;border:1px solid #e2ceb2;border-radius:18px;background:var(--panel,#fffaf0);min-width:0}

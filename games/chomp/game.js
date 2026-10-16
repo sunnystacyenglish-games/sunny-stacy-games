@@ -37,6 +37,7 @@ async function showTask(){
  if(token!==epoch)return;ready=true;render();
 }
 async function resolve(success){
+ if(task?.type==='bridge')success=presenter.automaticResult;
  if(!ready||(['bridge','sentenceCorrection'].includes(task.type)&&!presenter.canResolve)||!game.resolve(success,game.attempt))return;
  const token=epoch;ready=false;bag.record(task.key,success);render();if(success)playCorrect(settings.sound);else playWrong(settings.sound);
  if(!['bridge','sentenceCorrection'].includes(task.type)&&$('conceptTask').dataset.revealed!=='true'){revealTask($('conceptTask'));await delay(ANSWER_REVEAL_MS);}

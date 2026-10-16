@@ -40,6 +40,7 @@ export function mountTaskPresenter(host,{onReady=()=>{}}={}){
     const button=el('button','activity-task-gap',f.text||'\u00a0');button.type='button';button.dataset.gapId=f.gapId;button.setAttribute('aria-label',`Gap ${bridge.source.gaps.findIndex(g=>g.id===f.gapId)+1}${f.text?': '+f.text:''}`);button.setAttribute('aria-pressed',String(bridge.selected===f.gapId));button.disabled=bridge.revealed;
     button.dataset.groupId=bridge.source.gaps.find(g=>g.id===f.gapId).groupId;
     if(f.optionId)button.dataset.tone=String(bridge.options.findIndex(o=>o.id===f.optionId)%4);
+    if(revealed){const correct=bridge.assessment.gaps.find(g=>g.gapId===f.gapId).correct;button.dataset.result=correct?'correct':'incorrect';button.setAttribute('aria-invalid',String(!correct));button.setAttribute('aria-label',button.getAttribute('aria-label')+(correct?' — Correct':' — Incorrect'));}
     button.onclick=()=>{if(bridge.select(f.gapId))draw();};row.append(button);
    }
   }return row;
@@ -83,6 +84,7 @@ export function mountTaskPresenter(host,{onReady=()=>{}}={}){
    ready=true;draw();return true;
   },
   clear(){stopDrag();generation++;ready=false;task=null;bridge=null;host.replaceChildren();signal();},
-  get canResolve(){return ready&&(task?.type==='cardDecks'||revealed);}
+  get canResolve(){return ready&&(task?.type==='cardDecks'||revealed);},
+  get automaticResult(){return ready&&revealed&&bridge?bridge.assessment.correct:null;}
  };
 }

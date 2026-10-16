@@ -53,6 +53,11 @@ export class BridgeTask {
  available(allGroups=false){const used=new Set(this.placements.values()),group=allGroups?null:this.source.gaps.find(g=>g.id===this.selected)?.groupId;return this.options.filter(o=>!used.has(o.id)&&(!group||o.groupId===group));}
  place(id){if(this.revealed||!this.selected||!this.available().some(o=>o.id===id))return false;this.placements.set(this.selected,id);return true;}
  get complete(){return this.source.gaps.every(g=>this.placements.has(g.id));}
+ get assessment(){
+  if(!this.revealed)return null;
+  const gaps=this.source.gaps.map(gap=>{const expected=this.source.bricks.find(b=>b.id===gap.brickId).text,chosen=this.options.find(o=>o.id===this.placements.get(gap.id));return {gapId:gap.id,correct:chosen?.text===expected};});
+  return {correct:gaps.every(g=>g.correct),gaps};
+ }
  reveal(){if(this.revealed||!this.complete)return false;this.revealed=true;return true;}
  fragments(answer=false){return this.source.bricks.map(brick=>{const gap=this.source.gaps.find(g=>g.brickId===brick.id);if(!gap)return {text:brick.text};const option=this.options.find(o=>o.id===this.placements.get(gap.id));return {gapId:gap.id,optionId:option?.id,text:answer?brick.text:option?.text||'',changed:answer};});}
 }
