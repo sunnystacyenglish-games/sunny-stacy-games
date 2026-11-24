@@ -1,3 +1,4 @@
+import {QuizBag} from '../../shared/tasks/model.js';
 import {Chomp,MasteryBag,ordinal} from './engine.js';
 import {mountCreature,characterFor} from './creature.js';
 import {preferences,savePreferences,normalize,gameURL} from './settings.js';
@@ -22,25 +23,26 @@ function cancel(){epoch++;for(const [timer,resolve] of timers){clearTimeout(time
 function delay(ms){return new Promise(resolve=>{const timer=setTimeout(()=>{timers.delete(timer);resolve(true);},ms);timers.set(timer,resolve);});}
 function fail(error){ready=false;$('error').textContent=error.message||String(error);$('error').hidden=false;for(const hit of $('creature').querySelectorAll('[data-hit]')){hit.setAttribute('aria-disabled','true');hit.setAttribute('tabindex','-1');}updateControls();}
 const creature=mountCreature($('creature'),id=>press(id).catch(fail));
-const presenter=mountTaskPresenter($('authoredTask'),{onReady:()=>updateControls()});
+const presenter=mountTaskPresenter($('authoredTask'),{actionHost:$('taskPanel').querySelector('.teacher-actions'),onReady:()=>updateControls(),getPlayers:()=>settings.players});
 function persist(){savePreferences(settings);history.replaceState(null,'',gameURL(settings));}
 function players(){const host=$('players');host.replaceChildren();for(let i=0;i<settings.players;i++){const label=node('label'),input=node('input');label.className='player'+(game?.player===i?' active':'');label.dataset.player=i;label.append(node('span','Player '+(i+1)));input.value=settings.names[i];input.maxLength=40;input.setAttribute('aria-label','Player '+(i+1)+' name');input.onchange=()=>{settings.names[i]=input.value.trim()||'Player '+(i+1);persist();};label.append(input);host.append(label);}}
-function updateControls(){const enabled=ready&&game?.state==='TASK_ACTIVE',authored=['bridge','sentenceCorrection'].includes(task?.type),can=enabled&&(!authored||presenter.canResolve);for(const id of ['correct','incorrect','done'])$(id).disabled=!can;if(task?.type==='cardDecks'&&$('conceptTask').dataset.revealed!=='true')$('done').disabled=true;$('reveal').disabled=!enabled||$('conceptTask').dataset.revealed==='true';}
-function render(){if(!game)return;document.body.dataset.state=game.state;players();creature.update(game);const learning=['TASK_ACTIVE','TASK_RESOLVING'].includes(game.state);$('conceptTask').hidden=!learning||['bridge','sentenceCorrection'].includes(task?.type);$('authoredTask').hidden=!learning||!['bridge','sentenceCorrection'].includes(task?.type);$('taskPanel').querySelector('.teacher-actions').hidden=!learning;$('waiting').hidden=learning;$('waiting').textContent=game.state==='WAIT_FOR_TOOTH'?'Choose one available tooth.':game.state==='ROUND_COMPLETE'?'CHOMP!':'…';$('turn').textContent=settings.names[game.player]+' — '+(learning?'your task':game.state==='WAIT_FOR_TOOTH'?'choose a tooth':'CHOMP!');updateControls();}
+function updateControls(){const enabled=ready&&game?.state==='TASK_ACTIVE',authored=['bridge','sentenceCorrection','quiz'].includes(task?.type),can=enabled&&(!authored||presenter.canResolve);for(const id of ['correct','incorrect','done'])$(id).disabled=!can;if(task?.type==='cardDecks'&&$('conceptTask').dataset.revealed!=='true')$('done').disabled=true;$('reveal').disabled=!enabled||$('conceptTask').dataset.revealed==='true';}
+function render(){if(!game)return;document.body.dataset.state=game.state;players();creature.update(game);const learning=['TASK_ACTIVE','TASK_RESOLVING'].includes(game.state);$('conceptTask').hidden=!learning||['bridge','sentenceCorrection','quiz'].includes(task?.type);$('authoredTask').hidden=!learning||!['bridge','sentenceCorrection','quiz'].includes(task?.type);$('taskPanel').querySelector('.teacher-actions').hidden=!learning;$('waiting').hidden=learning;$('waiting').textContent=game.state==='WAIT_FOR_TOOTH'?'Choose one available tooth.':game.state==='ROUND_COMPLETE'?'CHOMP!':'…';$('turn').textContent=settings.names[game.player]+' — '+(learning?'your task':game.state==='WAIT_FOR_TOOTH'?'choose a tooth':'CHOMP!');updateControls();}
 async function showTask(){
  ready=false;task=bag.next();presenter.clear();const token=epoch;$('error').hidden=true;
- const done=['cardDecks','bridge'].includes(task.type);$('done').hidden=!done;$('correct').hidden=$('incorrect').hidden=done;render();
- if(['bridge','sentenceCorrection'].includes(task.type))await presenter.show(task);
+ const done=['cardDecks','bridge','quiz'].includes(task.type);$('done').hidden=!done;$('correct').hidden=$('incorrect').hidden=done;render();
+ if(['bridge','sentenceCorrection','quiz'].includes(task.type))await presenter.show(task);
  else if(task.type==='cardDecks'){
   const fragment=await cardContent(task);if(token!==epoch)return;const image=fragment.querySelector('img'),text=fragment.querySelector('p');$('taskImage').replaceChildren();if(image)$('taskImage').append(image);$('taskImage').hidden=!image;$('taskText').textContent=text?.textContent||'';$('taskText').hidden=!text;const mode=settings.deckBlur[task.group]||'none',part=concealedCardPart(task,mode);concealTask($('conceptTask'),part?mode:'none');if(!part)revealTask($('conceptTask'));$('reveal').hidden=!part;
  }else{renderConcept($('conceptTask'),task,settings.taskMode);const img=$('taskImage').querySelector('img');if(img)await img.decode().catch(()=>{throw Error('Task image could not load. Edit its source or choose other content.');});}
  if(token!==epoch)return;ready=true;render();
 }
 async function resolve(success){
- if(task?.type==='bridge')success=presenter.automaticResult;
- if(!ready||(['bridge','sentenceCorrection'].includes(task.type)&&!presenter.canResolve)||!game.resolve(success,game.attempt))return;
+ if(presenter.checkQuiz())return;
+ if(['bridge','quiz'].includes(task?.type))success=presenter.automaticResult;
+ if(!ready||(['bridge','sentenceCorrection','quiz'].includes(task.type)&&!presenter.canResolve)||!game.resolve(success,game.attempt))return;
  const token=epoch;ready=false;bag.record(task.key,success);render();if(success)playCorrect(settings.sound);else playWrong(settings.sound);
- if(!['bridge','sentenceCorrection'].includes(task.type)&&$('conceptTask').dataset.revealed!=='true'){revealTask($('conceptTask'));await delay(ANSWER_REVEAL_MS);}
+ if(!['bridge','sentenceCorrection','quiz'].includes(task.type)&&$('conceptTask').dataset.revealed!=='true'){revealTask($('conceptTask'));await delay(ANSWER_REVEAL_MS);}
  if(token!==epoch)return;game.resolved();render();if(game.state==='TASK_ACTIVE')await showTask();else $('creature').querySelector('[aria-disabled="false"]')?.focus();
 }
 async function press(id){const result=game?.press(id);if(!result)return;const token=epoch;render();await delay(300);if(token!==epoch)return;game.pressedDone();if(result.danger){render();creature.close();playChomp(settings.sound);await delay(460);if(token!==epoch)return;game.complete();render();$('resultText').textContent=settings.names[game.player]+': You CHOMPED on the '+ordinal(result.count)+' tooth!';$('result').showModal();}else await showTask();}
@@ -59,10 +61,10 @@ async function loadContent(){
  const content=await selection.load();return {...content,items:content.items.map(item=>({...item,key:JSON.stringify([content.type,content.documentId,item.id]),group:content.documentId}))};
 }
 $('setupForm').onsubmit=async e=>{e.preventDefault();if(busy||$('play').disabled)return;busy=true;summary();try{
- const content=await loadContent(),next=normalize({...settings,...selection.reference(),deckRefs:decks.refs(),deckBlur:decks.blurMap(),set:$('setSelect').value,theme:$('themeSelect').value,players:$('playerCount').value,taskMode:$('taskMode').value,sound:$('sound').checked,names:settings.names.map((n,i)=>$('name'+i)?.value.trim()||n)}),key=JSON.stringify(content),changed=key!==signature;
+ const content=await loadContent(),next=normalize({...settings,...selection.reference(),deckRefs:decks.refs(),deckBlur:decks.blurMap(),set:$('setSelect').value,theme:$('themeSelect').value,players:$('playerCount').value,taskMode:$('taskMode').value,sound:$('sound').checked,names:settings.names.map((n,i)=>$('name'+i)?.value.trim()||n)}),key=JSON.stringify([content,next.shuffleQuestions]),changed=key!==signature;
  const restart=!game||changed||next.theme!==settings.theme||next.players!==settings.players||game.state==='ROUND_COMPLETE';
- if(changed||!bag){bag=new MasteryBag(content.items);signature=key;}active=content;settings=next;menu.commit();persist();applyTheme(settings.theme);$('setup').close();if(!settings.sound)stopAllAudio();if(restart)await start();else render();
- }catch(error){$('setupError').textContent=error.message;if(!$('setup').open)fail(error);}finally{busy=false;summary();}};
+ if(changed||!bag){bag=content.type==='quiz'?new QuizBag(content.items,{shuffle:next.shuffleQuestions}):new MasteryBag(content.items);signature=key;}active=content;settings=next;menu.commit();persist();applyTheme(settings.theme);$('setup').close();if(!settings.sound)stopAllAudio();if(restart)await start();else render();
+ }catch(error){console.error(error);$('setupError').textContent=error.message;if(!$('setup').open)fail(error);}finally{busy=false;summary();}};
 $('correct').onclick=()=>resolve(true).catch(fail);$('incorrect').onclick=()=>resolve(false).catch(fail);$('done').onclick=()=>{if(task?.type==='cardDecks'&&$('conceptTask').dataset.revealed!=='true')return;resolve(true).catch(fail);};
 // Deck completion requires reveal; Concepts retain teacher evaluation with brief reveal.
 $('reveal').onclick=()=>{if(!ready||game.state!=='TASK_ACTIVE')return;revealTask($('conceptTask'));updateControls();};
@@ -72,5 +74,5 @@ $('fullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscre
 $('result').addEventListener('cancel',e=>e.preventDefault());addEventListener('pagehide',()=>{cancel();creature.destroy();presenter.clear();menu?.destroy();});
 async function init(){for(const theme of themes)$('themeSelect').append(new Option(theme.name,theme.id));sets=await setRepository.list();for(const set of sets)$('setSelect').append(new Option(set.name,set.id));if(!sets.some(s=>s.id===settings.set))$('setSelect').append(new Option('Content unavailable',settings.set));
  menu=mountSetupMenu({gameType:'chomp',dialog:$('setup'),form:$('setupForm'),title:$('setupTitle'),setSelect:$('setSelect'),themeSelect:$('themeSelect'),sound:$('sound'),getSets:()=>sets,setSets:next=>sets=next,onContentChange:summary,contentNotes:[$('blurLabel')],gameplay:[$('playerSetup')],status:[$('setupError')],footer:$('setupForm').querySelector('.dialog-actions'),committedTheme:()=>settings.theme});
- const panel=$('setup').querySelector('[data-panel=content]');decks=mountDeckSelection(panel,summary,{validate:validateSelected,showColors:false});decks.hideType();selection=mountTaskSelection(panel,{types:['bridge','sentenceCorrection'],legacyModes:['decks'],onChange:()=>{decks?.setMode(selection?.mode);summary();}});applyTheme(settings.theme);await openSetup();}
+ const panel=$('setup').querySelector('[data-panel=content]');decks=mountDeckSelection(panel,summary,{validate:validateSelected,showColors:false});decks.hideType();selection=mountTaskSelection(panel,{types:['bridge','sentenceCorrection','quiz'],legacyModes:['decks'],onChange:()=>{decks?.setMode(selection?.mode);summary();}});applyTheme(settings.theme);await openSetup();}
 init().catch(fail);

@@ -4,8 +4,10 @@ import {compatibleGames,contentGameURL} from '../shared/library-games.js';
 import {selectLibrary} from '../shared/library-model.js';
 const item=(type,data={})=>({id:'source-id',type,record:{content:{data}}});
 const ids=i=>compatibleGames(i).map(g=>g.id);
-assert.equal(GAME_CATALOG.length,7);
-assert.equal(new Set(GAME_CATALOG.map(g=>g.url)).size,7);
+assert.equal(GAME_CATALOG.length,8);
+assert.equal(new Set(GAME_CATALOG.map(g=>g.url)).size,8);
+assert.deepEqual(ids(item('quiz')),['tic-tac-toe','board-race','chomp']);
+assert.deepEqual(ids(item('labelIt')),['label-it']);
 assert.deepEqual(ids(item('scene')),['i-spy']);
 assert.deepEqual(ids(item('bridge')),['board-race','chomp']);
 assert.deepEqual(ids(item('sentenceCorrection')),['tic-tac-toe','board-race','chomp']);
@@ -21,3 +23,4 @@ assert.equal(selectLibrary(items,{folders,folderId:'a',search:'hobbies'}).length
 assert.equal(selectLibrary(items,{folders,folderId:'a',search:'HOBBIES',type:'cardDecks'}).length,2);
 assert.deepEqual(selectLibrary(items,{folders,folderId:'a'}),[items[0]]);
 console.log('PASS compatibility matrix, minimum five, source URL and all decks <=5, explicit TTT deck choice, global search across folders and clear-to-location');
+

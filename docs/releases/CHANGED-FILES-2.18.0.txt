@@ -1,0 +1,16 @@
+I-SPY-2.18.0.md
+content/editor.js
+games/i-spy/game.css
+games/i-spy/game.js
+games/i-spy/index.html
+games/i-spy/magnifier.js
+package.json
+shared/editors/editors.css
+shared/editors/scene-prepare.js
+shared/editors/scene.js
+tests/content-scene.js
+tests/editors-responsive.html
+tests/scene-workflow51.html
+tests/scene-workflow51.js
+tests/spy-delta5.js
+tests/spy-pointer.html

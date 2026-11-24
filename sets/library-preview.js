@@ -10,7 +10,7 @@ export async function renderPreview(host,item){
   host.classList.add('library-concepts');const concepts=item.record.items||[];
   for(const concept of concepts.filter(c=>c.image).slice(0,4)){const cell=element('span','library-concept');host.append(cell);if(concept.image.type==='emoji')cell.textContent=concept.image.value;else image(cell,imageURL(concept.image),concept.word);}
   if(!host.children.length)fallback(host,concepts.slice(0,4).map(c=>c.word).join(' · ')||'Concepts');
- }else if(item.type==='scene'){
+ }else if(item.type==='quiz'){const q=data.questions?.[0];if(q?.image){try{image(host,await activityAssets.mediaURL(q.image),q.text||'Question');}catch{fallback(host,'Image unavailable');}}if(q?.text)host.append(element('p','library-quiz',q.text));if(!q)fallback(host,'Quiz');}else if(['scene','labelIt'].includes(item.type)){
   if(!data.background)return fallback(host,'Scene');
   try{image(host,await activityAssets.mediaURL(data.background),item.name);}catch{fallback(host,'Image unavailable');}
  }else if(item.type==='cardDecks'){

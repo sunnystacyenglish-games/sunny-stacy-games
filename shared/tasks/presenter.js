@@ -1,10 +1,11 @@
+import {mountQuizTask} from './quiz-presenter.js';
 import {BridgeTask,taskAnswerDiff} from './model.js';
 import {cardContent} from './card.js';
 const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
 
 // Content owns its reveal state; only the game controller applies the result.
-export function mountTaskPresenter(host,{onReady=()=>{}}={}){
- let generation=0,bridge=null,revealed=false,ready=false,task,drag=null;
+export function mountTaskPresenter(host,{onReady=()=>{},getPlayers=()=>2,actionHost=null}={}){
+ let quiz=null,generation=0,bridge=null,revealed=false,ready=false,task,drag=null;
  function stopDrag(){if(!drag)return;const previous=drag;drag=null;previous.ghost?.remove();if(previous.button.hasPointerCapture?.(previous.pointerId))previous.button.releasePointerCapture(previous.pointerId);for(const gap of host.querySelectorAll('.is-drop-target'))gap.classList.remove('is-drop-target');}
  function draggable(button,option){
   button.classList.add('activity-task-draggable');
@@ -29,7 +30,7 @@ export function mountTaskPresenter(host,{onReady=()=>{}}={}){
   };
   button.onpointercancel=stopDrag;button.onlostpointercapture=stopDrag;
  }
- const signal=()=>onReady(ready&&(task?.type==='cardDecks'||revealed));
+ const signal=()=>onReady(ready&&(task?.type==='quiz'?(!!quiz?.result||quiz?.phase==='answering'&&quiz.selected.size>0):task?.type==='cardDecks'||revealed));
  function section(label){const box=el('section','activity-task-section');box.append(el('h3','activity-task-label',label));return box;}
  function bridgeSentence(answer=false){
   const row=el('div','activity-task-sentence');
@@ -74,7 +75,8 @@ export function mountTaskPresenter(host,{onReady=()=>{}}={}){
  }
  return {
   async show(value){
-   stopDrag();const token=++generation;task=structuredClone(value);bridge=null;revealed=false;ready=false;host.replaceChildren();signal();
+   stopDrag();actionHost?.querySelector('.quiz-external-controls')?.remove();const token=++generation;task=structuredClone(value);quiz=null;bridge=null;revealed=false;ready=false;host.replaceChildren();signal();
+   if(task.type==='quiz'){const staging=document.createElement('div');const candidate=await mountQuizTask(staging,task,{players:getPlayers(),actionHost,onReady:()=>{if(token===generation)signal();}});if(token!==generation)return false;quiz=candidate;host.replaceChildren(...staging.childNodes);quiz.attachControls();ready=true;signal();return true;}
    if(task.type==='cardDecks'){
     host.classList.add('activity-task');host.dataset.taskType=task.type;const card=el('article','activity-task-card');
     const content=await cardContent(task);if(token!==generation)return false;card.append(content);card.querySelector('p')?.classList.add('activity-task-text');host.append(card);ready=true;signal();return true;
@@ -83,8 +85,11 @@ export function mountTaskPresenter(host,{onReady=()=>{}}={}){
    else if(task.type!=='sentenceCorrection')throw Error('Unsupported task content.');
    ready=true;draw();return true;
   },
-  clear(){stopDrag();generation++;ready=false;task=null;bridge=null;host.replaceChildren();signal();},
-  get canResolve(){return ready&&(task?.type==='cardDecks'||revealed);},
-  get automaticResult(){return ready&&revealed&&bridge?bridge.assessment.correct:null;}
+  clear(){stopDrag();actionHost?.querySelector('.quiz-external-controls')?.remove();generation++;ready=false;task=null;bridge=null;quiz=null;host.replaceChildren();signal();},
+  get canResolve(){return ready&&(task?.type==='quiz'?(!!quiz?.result||quiz?.phase==='answering'&&quiz.selected.size>0):task?.type==='cardDecks'||revealed);},
+  checkQuiz(){if(task?.type!=='quiz'||quiz?.result)return false;quiz?.checkAndDraw();return true;},
+  get quizResult(){return quiz?.result?structuredClone(quiz.result):null;},
+  get automaticResult(){if(task?.type==='quiz')return quiz?.result?quiz.result.status==='correct':null;return ready&&revealed&&bridge?bridge.assessment.correct:null;},
+  get gapAssessment(){return ready&&revealed&&bridge?structuredClone(bridge.assessment.gaps):null;}
  };
 }

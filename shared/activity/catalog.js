@@ -17,3 +17,5 @@ registerAuthoringEditors(activityRegistry);
 for(const definition of [dobble,ttt,wordly,dice,race,chomp])activityRegistry.registerGame(definition);
 
 activityRegistry.registerGame(spy);
+
+activityRegistry.registerGame({id:'label-it',supportedContentTypes:['labelIt'],defaultGameplayConfig:{checkMode:'all'},normalizeGameplay:raw=>({checkMode:raw.checkMode==='instant'?'instant':'all'}),editors:{labelIt:'labelIt'},runtime:'games/label-it/',capabilities:{supportsReusableSets:true,automaticScoring:true}});

@@ -25,4 +25,4 @@ export const contentRepository={
   const db=await openDatabase();await new Promise((resolve,reject)=>{const tx=db.transaction(['activities','activityFolders'],'readwrite');tx.objectStore('activities').delete(id);tx.objectStore('activityFolders').delete(id);tx.oncomplete=resolve;tx.onerror=tx.onabort=()=>reject(Error('Could not delete this content.'));});
  }
 };
-export const contentTypes=[['conceptSet','Concept Set','Words and pictures'],['scene','Scene','Background, objects and targets'],['bridge','Bridge','Sequences, gaps and distractors'],['sentenceCorrection','Sentence Correction','Correct and incorrect sentence pairs'],['cardDecks','Card Deck','Cards organised into decks']];
+export const contentTypes=[['labelIt','Label It!','Label target zones in an image'],['quiz','Quiz','Single Choice, Multiple Choice and True / False'],['conceptSet','Concept Set','Words and pictures'],['scene','Scene','Background, objects and targets'],['bridge','Bridge','Sequences, gaps and distractors'],['sentenceCorrection','Sentence Correction','Correct and incorrect sentence pairs'],['cardDecks','Card Deck','Cards organised into decks']];

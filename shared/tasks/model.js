@@ -1,3 +1,4 @@
+import {validateQuiz} from './quiz.js';
 import {validateBridge,validateSentences,validateDecks,sentenceDiff} from '../editors/models.js';
 
 export function taskAnswerDiff(original,answer){
@@ -12,7 +13,8 @@ export function taskSnapshot(document,{deckId}={}) {
  if(!document?.content)throw Error('Choose available content before playing.');
  const {type}=document.content,data=structuredClone(document.content.data);
  let items;
- if(type==='sentenceCorrection'){validateSentences(data);items=data.sentences;}
+ if(type==='quiz'){validateQuiz(data);items=data.questions;}
+ else if(type==='sentenceCorrection'){validateSentences(data);items=data.sentences;}
  else if(type==='bridge'){validateBridge(data);items=data.bridges;}
  else if(type==='cardDecks'){
   validateDecks(data,{previousDeckCount:data.decks?.length||0});
@@ -34,6 +36,21 @@ export class TaskBag {
   }
   const next=this.queue.shift();this.last=next.id;return structuredClone(next);
  }
+}
+
+// Reuse the task bag's coverage pass; unsuccessful questions wait until it ends.
+export class QuizBag extends TaskBag {
+ constructor(items,{shuffle=true,random=Math.random}={}){super(items,random);this.shuffle=shuffle;this.pending=new Set(items.map(i=>i.id));}
+ next(){
+  if(!this.queue.length){
+   const eligible=this.items.filter(i=>this.pending.has(i.id));this.queue=[...(eligible.length?eligible:this.items)];
+   if(this.shuffle)for(let i=this.queue.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[this.queue[i],this.queue[j]]=[this.queue[j],this.queue[i]];}
+   if(this.queue.length>1&&this.queue[0].id===this.last)[this.queue[0],this.queue[1]]=[this.queue[1],this.queue[0]];
+   if(this.queue.length===1&&this.queue[0].id===this.last&&this.items.length>1)this.queue.unshift(this.items.find(i=>i.id!==this.last));
+  }
+  const item=this.queue.shift();this.last=item.id;return structuredClone(item);
+ }
+ record(id,success){const item=this.items.find(i=>i.id===id||i.key===id);if(!item)return;if(success)this.pending.delete(item.id);else this.pending.add(item.id);}
 }
 
 // Identity is scoped by source and group, never by displayed answer text.

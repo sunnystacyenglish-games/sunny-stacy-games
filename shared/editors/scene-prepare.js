@@ -3,7 +3,7 @@ import {el,action,input,id,preview} from './common.js';
 import {imageInput,imageFromURL} from './image-input.js';
 import {CONTENT_LIMITS as L} from '../activity/limits.js';
 
-export function prepareSceneContent(c,{next,uploadBackground}) {
+export function prepareSceneContent(c,{next,uploadBackground,labels=false}) {
  const d=c.data,wrap=el('div','scene-prepare'),left=el('section','scene-background-column'),right=el('section','scene-prompts');
  const changed=()=>{c.changed();c.draw();};
  left.append(imageInput(d.background?'Change background':'+ Add image',uploadBackground));
@@ -35,15 +35,15 @@ export function prepareSceneContent(c,{next,uploadBackground}) {
   host.addEventListener('drop',e=>{const file=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(file){e.preventDefault();add(file,promptId).catch(()=>{});}});
   thumbnails(host,promptId);
  }
- right.append(el('h2','','Prompts'));
+ right.append(el('h2','',labels?'Target zones':'Prompts'));
  for(const t of d.targets){const row=el('div','scene-prompt-row');row.dataset.promptId=t.id;
-  row.append(input('Prompt',t.prompt,v=>{t.prompt=v;c.changed();},{area:true}),action('Delete Prompt',()=>{d.targets=d.targets.filter(x=>x.id!==t.id);changed();}));imageArea(row,t.id);right.append(row);
+  row.append(input(labels?'Accepted Answers — one variant per line':'Prompt',t.prompt,v=>{t.prompt=v;c.changed();},{area:true}),action(labels?'Delete target':'Delete Prompt',()=>{d.targets=d.targets.filter(x=>x.id!==t.id);changed();}));if(!labels)imageArea(row,t.id);right.append(row);
  }
- right.append(action('+ Add Prompt',()=>{d.targets.push({id:id(),prompt:'',answers:[]});changed();},d.targets.length>=L.scene.targets));
- const shared=el('details','scene-unassigned');shared.append(el('summary','','Scene Elements'));imageArea(shared,null);right.append(shared);
+ right.append(action(labels?'+ Add target':'+ Add Prompt',()=>{d.targets.push({id:id(),prompt:'',answers:[]});changed();},d.targets.length>=L.scene.targets));
+ const shared=el('details','scene-unassigned');shared.append(el('summary','','Scene Elements'));if(!labels){imageArea(shared,null);right.append(shared);}
  wrap.append(left,right);c.space.append(wrap,action('Next',()=>{
   if(!d.background){c.error('Add a background image.');return;}
-  if(!d.targets.length||d.targets.some(t=>!t.prompt.trim())){c.error('Write each Prompt before arranging its Targets.');return;}
+  if(!d.targets.length||d.targets.some(t=>!t.prompt.trim())){c.error(labels?'Enter accepted answers before placing target zones.':'Write each Prompt before arranging its Targets.');return;}
   c.error('');next();
  }));
 }

@@ -1,6 +1,30 @@
 {
   "updates": [
     {
+      "id": "quiz-2-26-0",
+      "area": "Quiz",
+      "title": "Quiz in your favourite games",
+      "description": "Create single-choice, multiple-choice and True / False questions with text and images. Use your quizzes in Tic-Tac-Toe, Board Race and CHOMP! Check answers with Done / Continue or reveal the answer.",
+      "homeSummary": "Create quizzes and use them in three games",
+      "date": "2026-11-24",
+      "version": "2.26.0",
+      "type": "new",
+      "published": true,
+      "verified": true
+    },
+    {
+      "id": "label-it-2-26-0",
+      "area": "Label It!",
+      "title": "Label It! — New Game",
+      "description": "Turn your own image into a labelling activity. Add target zones and accepted answers in Content Studio, then check answers together or as you go. Revealed labels stay visible until restart.",
+      "homeSummary": "Turn your images into labelling activities",
+      "date": "2026-11-24",
+      "version": "2.26.0",
+      "type": "new",
+      "published": true,
+      "verified": true
+    },
+    {
       "id": "chomp-2-25-0",
       "date": "2026-10-16",
       "area": "CHOMP!",

@@ -1,27 +1,37 @@
-# Sunny & Stacy Games — 2.24.0 · Hub & My Content
+# Sunny & Stacy Games — 2.26.0 · Quiz & Label It!
 
 Локальное HTML/CSS/JavaScript-приложение. Существующие темы и изображения сохранены; backend не добавлен.
 
-Текущее обновление и проверки: [HUB-LIBRARY-2.24.0.md](HUB-LIBRARY-2.24.0.md).
+Текущее обновление и проверки: [Quiz & Label It! 2.26.0](docs/releases/QUIZ-LABEL-2.26.0.md).
+
+## Структура проекта
+
+- `games/` — игровые страницы и логика.
+- `shared/` — общие компоненты и редакторы.
+- `content/`, `sets/`, `activities/` — Content Studio и библиотека.
+- `assets/`, `data/` — общие ресурсы и встроенный контент.
+- `tests/` — автоматические и браузерные проверки.
+- `docs/guides/` — руководства; `docs/releases/` — история изменений и отчёты.
+- `updates.json` — редактируемая лента обновлений главной страницы.
 
 ## Запуск
 
-1. Распакуйте sunny-stacy-games-2.24.0.zip целиком.
+1. Распакуйте sunny-stacy-games.zip целиком.
 2. Откройте терминал в папке sunny-stacy-games, где находится package.json.
 3. С Node.js 18+ выполните `node serve.mjs`. Установка npm-пакетов не требуется.
 4. Откройте http://127.0.0.1:4173. Не закрывайте терминал во время работы.
 
 Альтернатива: `python -m http.server 4173 --bind 127.0.0.1`. Запуск через file:// не поддерживается. Используйте один адрес: localhost и 127.0.0.1 имеют разные браузерные хранилища.
 
-Новые редакторы, архитектура, проверки и ограничения: [CONTENT-MASTER-2.13.0.md](CONTENT-MASTER-2.13.0.md).
+Новые редакторы, архитектура, проверки и ограничения: [CONTENT-MASTER-2.13.0.md](docs/releases/CONTENT-MASTER-2.13.0.md).
 
-Обновление Board Race, проверенные сценарии и ограничения: [BOARD-RACE-2.14.2.md](BOARD-RACE-2.14.2.md).
+Обновление Board Race, проверенные сценарии и ограничения: [BOARD-RACE-2.14.2.md](docs/releases/BOARD-RACE-2.14.2.md).
 
-Последующие правки поля: [BOARD-RACE-2.14.3.md](BOARD-RACE-2.14.3.md).
+Последующие правки поля: [BOARD-RACE-2.14.3.md](docs/releases/BOARD-RACE-2.14.3.md).
 
-Геометрия предыдущего этапа: [BOARD-RACE-2.15.0.md](BOARD-RACE-2.15.0.md).
+Геометрия предыдущего этапа: [BOARD-RACE-2.15.0.md](docs/releases/BOARD-RACE-2.15.0.md).
 
-Текущие изменения Cards / Decks и Delta 4: [BOARD-RACE-2.16.0.md](BOARD-RACE-2.16.0.md).
+Текущие изменения Cards / Decks и Delta 4: [BOARD-RACE-2.16.0.md](docs/releases/BOARD-RACE-2.16.0.md).
 
 ## Основной сценарий
 
