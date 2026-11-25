@@ -1,6 +1,30 @@
 {
   "updates": [
     {
+      "id": "label-it-2-26-2",
+      "area": "Label It!",
+      "title": "Compact editing and answers beside targets",
+      "description": "Compact target editing, automatic hotspot selection and drawing, answers beside the selected target and an optional case-sensitive setting, off by default.",
+      "homeSummary": "Compact targets and answers beside image zones",
+      "date": "2026-11-25",
+      "version": "2.26.2",
+      "type": "improved",
+      "published": true,
+      "verified": true
+    },
+    {
+      "id": "quiz-2-26-2",
+      "area": "Quiz",
+      "title": "Clearer questions and answers",
+      "description": "Larger bold questions, visual True / False symbols and colourful themed answer options across Tic-Tac-Toe, Board Race and CHOMP.",
+      "homeSummary": "Clearer questions and visual True / False answers",
+      "date": "2026-11-25",
+      "version": "2.26.2",
+      "type": "improved",
+      "published": true,
+      "verified": true
+    },
+    {
       "id": "quiz-2-26-0",
       "area": "Quiz",
       "title": "Quiz in your favourite games",

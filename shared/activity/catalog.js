@@ -18,4 +18,4 @@ for(const definition of [dobble,ttt,wordly,dice,race,chomp])activityRegistry.reg
 
 activityRegistry.registerGame(spy);
 
-activityRegistry.registerGame({id:'label-it',supportedContentTypes:['labelIt'],defaultGameplayConfig:{checkMode:'all'},normalizeGameplay:raw=>({checkMode:raw.checkMode==='instant'?'instant':'all'}),editors:{labelIt:'labelIt'},runtime:'games/label-it/',capabilities:{supportsReusableSets:true,automaticScoring:true}});
+activityRegistry.registerGame({id:'label-it',supportedContentTypes:['labelIt'],defaultGameplayConfig:{checkMode:'all',caseSensitive:false},normalizeGameplay:raw=>({checkMode:raw.checkMode==='instant'?'instant':'all',caseSensitive:raw.caseSensitive===true}),editors:{labelIt:'labelIt'},runtime:'games/label-it/',capabilities:{supportsReusableSets:true,automaticScoring:true}});

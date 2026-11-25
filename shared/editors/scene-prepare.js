@@ -1,9 +1,9 @@
-import {imagePreview} from './controls.js';
+import {autoSize,imagePreview} from './controls.js';
 import {el,action,input,id,preview} from './common.js';
 import {imageInput,imageFromURL} from './image-input.js';
 import {CONTENT_LIMITS as L} from '../activity/limits.js';
 
-export function prepareSceneContent(c,{next,uploadBackground,labels=false}) {
+export function prepareSceneContent(c,{next,uploadBackground,labels=false,selectedTarget,onSelectTarget=()=>{}}) {
  const d=c.data,wrap=el('div','scene-prepare'),left=el('section','scene-background-column'),right=el('section','scene-prompts');
  const changed=()=>{c.changed();c.draw();};
  left.append(imageInput(d.background?'Change background':'+ Add image',uploadBackground));
@@ -36,10 +36,15 @@ export function prepareSceneContent(c,{next,uploadBackground,labels=false}) {
   thumbnails(host,promptId);
  }
  right.append(el('h2','',labels?'Target zones':'Prompts'));
- for(const t of d.targets){const row=el('div','scene-prompt-row');row.dataset.promptId=t.id;
-  row.append(input(labels?'Accepted Answers — one variant per line':'Prompt',t.prompt,v=>{t.prompt=v;c.changed();},{area:true}),action(labels?'Delete target':'Delete Prompt',()=>{d.targets=d.targets.filter(x=>x.id!==t.id);changed();}));if(!labels)imageArea(row,t.id);right.append(row);
+ for(const [index,t] of d.targets.entries()){
+  if(labels){
+   const row=el('details','label-target-row'),summary=el('summary'),number=el('span','',String(index+1).padStart(2,'0')),title=el('strong'),state=el('span','label-target-state');row.dataset.promptId=t.id;row.open=t.id===(selectedTarget||d.targets[0]?.id);
+   const update=()=>{title.textContent=t.prompt.split(/\r?\n/).find(v=>v.trim())?.trim()||'Target '+(index+1);const linked=t.answers.some(a=>a.type==='hotspot'&&d.hotspots.some(h=>h.id===a.hotspotId));state.textContent=linked?'✓ Hotspot assigned':'⚠ Hotspot not assigned';};update();summary.append(number,title,state);row.append(summary);
+   row.addEventListener('toggle',()=>{if(!row.isConnected||!row.open)return;onSelectTarget(t.id);for(const other of right.querySelectorAll('details.label-target-row'))if(other!==row)other.open=false;});
+   const body=el('div','label-target-body'),answers=input('Accepted Answers — one variant per line',t.prompt,v=>{t.prompt=v;c.changed();update();},{area:true});autoSize(answers.querySelector('textarea'));body.append(answers,action('Delete target',()=>{const removed=new Set(t.answers.filter(a=>a.type==='hotspot').map(a=>a.hotspotId));d.targets=d.targets.filter(x=>x.id!==t.id);d.hotspots=d.hotspots.filter(h=>!removed.has(h.id));onSelectTarget(d.targets[Math.min(index,d.targets.length-1)]?.id);changed();}));row.append(body);right.append(row);
+  }else{const row=el('div','scene-prompt-row');row.dataset.promptId=t.id;row.append(input('Prompt',t.prompt,v=>{t.prompt=v;c.changed();},{area:true}),action('Delete Prompt',()=>{d.targets=d.targets.filter(x=>x.id!==t.id);changed();}));imageArea(row,t.id);right.append(row);}
  }
- right.append(action(labels?'+ Add target':'+ Add Prompt',()=>{d.targets.push({id:id(),prompt:'',answers:[]});changed();},d.targets.length>=L.scene.targets));
+ right.append(action(labels?'+ Add target':'+ Add Prompt',()=>{const t={id:id(),prompt:'',answers:[]};d.targets.push(t);if(labels)onSelectTarget(t.id);changed();},d.targets.length>=L.scene.targets));
  const shared=el('details','scene-unassigned');shared.append(el('summary','','Scene Elements'));if(!labels){imageArea(shared,null);right.append(shared);}
  wrap.append(left,right);c.space.append(wrap,action('Next',()=>{
   if(!d.background){c.error('Add a background image.');return;}
