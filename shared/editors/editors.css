@@ -26,7 +26,7 @@ body:is([data-editor=scene],[data-editor=labelIt]) .content-workspace{height:aut
 body:is([data-editor=scene],[data-editor=labelIt]) #contentForm,body:is([data-editor=scene],[data-editor=labelIt]) #workspace,body:is([data-editor=scene],[data-editor=labelIt]) .structured-editor{display:block;min-height:0}
 .scene-prepare{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start;margin:16px 0}
 .scene-background-column{min-width:0}.scene-background-column>.editor-image{display:block;width:100%;height:auto;margin-top:12px;object-fit:contain}
-.scene-prompts{min-width:0;max-height:calc(100dvh - 210px);overflow:auto;padding:0 8px 12px}.scene-prompts h2{font-size:20px;margin:0 0 12px}
+.scene-prompts{min-width:0;max-height:none;overflow:visible;padding:0 8px 12px}.scene-prompts h2{font-size:20px;margin:0 0 12px}
 .scene-prompt-row{border-bottom:1px solid var(--border);padding:12px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.scene-prompt-row>.editor-field:first-child{flex:1 1 100%}.scene-prompt-row .editor-field textarea{min-height:54px}.scene-prompt-row>.editor-field:not(:first-child){flex:1;min-width:130px}
 .scene-prepare-images{display:flex;gap:8px;flex-wrap:wrap;flex-basis:100%}.scene-prepare-images button{padding:4px}.scene-prepare-images img{width:52px;height:52px;object-fit:contain}.scene-unassigned{margin-top:16px}.scene-unassigned summary{cursor:pointer;margin-bottom:8px}
 .scene-image-dialog>.editor-image{display:block;width:100%;height:50dvh;object-fit:contain;margin-bottom:12px}.scene-image-dialog button{margin:4px}

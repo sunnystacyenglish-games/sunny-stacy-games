@@ -10,3 +10,5 @@ html:has(body.spy-page){height:100%;overflow:hidden}body.spy-page{position:fixed
 /* Pointer capture owns lens gestures; prevent touch scroll from cancelling them. */
 #scene{touch-action:none}
 
+
+.scene-tools{display:flex;justify-content:flex-start;flex:none}.scene-tools button{min-width:44px;min-height:44px;padding:6px 12px;font-size:22px}.scene-tools button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink,var(--ink));outline:2px solid var(--ink);outline-offset:1px}

@@ -1,6 +1,18 @@
 {
   "updates": [
     {
+      "id": "i-spy-2-26-3",
+      "area": "I Spy / Spot It",
+      "title": "Smoother prompt editing and optional magnifier",
+      "description": "One page scroll for prompts; newly added prompts stay in view. Use the magnifier button to turn the tool on or off, or select answers directly without it.",
+      "homeSummary": "Easier prompt editing and an optional magnifier",
+      "date": "2026-11-27",
+      "version": "2.26.3",
+      "type": "improved",
+      "published": true,
+      "verified": true
+    },
+    {
       "id": "label-it-2-26-2",
       "area": "Label It!",
       "title": "Compact editing and answers beside targets",
